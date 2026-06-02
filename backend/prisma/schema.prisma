@@ -1,0 +1,149 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. EMPLOYEE ENTITY
+model Employee {
+  employee_id   String    @id @default(uuid()) @db.Uuid
+  full_name     String    @db.VarChar(100)
+  email         String    @unique @db.VarChar(150)
+  password      String
+  phone         String?   @db.VarChar(20)
+  role          String    @db.VarChar(20) // Admin / Employee
+  status        String    @default("Active") @db.VarChar(20) // Active / Inactive
+  hire_date     DateTime  @db.Date
+  position      String?   @db.VarChar(100)
+  
+  // Foreign Keys
+  department_id String?   @db.Uuid
+  address_id    String?   @db.Uuid
+
+  // Timestamps
+  created_at    DateTime  @default(now()) @db.Timestamp()
+  updated_at    DateTime  @updatedAt @db.Timestamp()
+
+  // Relationships
+  department    Department?     @relation(fields: [department_id], references: [department_id])
+  address       Address?        @relation(fields: [address_id], references: [address_id])
+  attendances   Attendance[]
+  leave_requests LeaveRequest[] @relation("EmployeeRequests")
+  approved_leaves LeaveRequest[] @relation("AdminApprovals")
+  leave_balances LeaveBalance[]
+  grievances    Grievance[]
+  sessions      Session[]
+}
+
+// 2. DEPARTMENT ENTITY
+model Department {
+  department_id String     @id @default(uuid()) @db.Uuid
+  name          String     @unique @db.VarChar(100)
+  description   String?    @db.Text
+  
+  // Relationships
+  employees     Employee[]
+}
+
+// 3. ADDRESS ENTITY
+model Address {
+  address_id String     @id @default(uuid()) @db.Uuid
+  country    String     @db.VarChar(100)
+  city       String     @db.VarChar(100)
+  state      String?    @db.VarChar(100)
+  
+  // Relationships
+  employees  Employee[]
+}
+
+// 4. ATTENDANCE ENTITY
+model Attendance {
+  attendance_id  String    @id @default(uuid()) @db.Uuid
+  employee_id    String    @db.Uuid
+  date           DateTime  @db.Date // Ensures one distinct date record
+  check_in_time  DateTime? @db.Timestamp()
+  check_out_time DateTime? @db.Timestamp()
+  total_hours    Decimal?  @db.Decimal(5, 2)
+  status         String    @db.VarChar(20) // Present / Late / Absent
+  device_info    String?   @db.VarChar(100)
+
+  // Relationships
+  employee       Employee  @relation(fields: [employee_id], references: [employee_id], onDelete: Cascade)
+
+  @@unique([employee_id, date]) // An employee can only have one attendance log per calendar day
+}
+
+// 5. LEAVE_REQUEST ENTITY
+model LeaveRequest {
+  leave_id      String    @id @default(uuid()) @db.Uuid
+  employee_id   String    @db.Uuid
+  leave_type_id String    @db.Uuid
+  start_date    DateTime  @db.Date
+  end_date      DateTime  @db.Date
+  reason        String?   @db.Text
+  status        String    @default("Pending") @db.VarChar(20) // Pending / Approved / Rejected
+  approved_by   String?   @db.Uuid
+  created_at    DateTime  @default(now()) @db.Timestamp()
+
+  // Relationships
+  employee      Employee  @relation("EmployeeRequests", fields: [employee_id], references: [employee_id], onDelete: Cascade)
+  approver      Employee? @relation("AdminApprovals", fields: [approved_by], references: [employee_id])
+  leave_type    LeaveType @relation(fields: [leave_type_id], references: [leave_type_id])
+}
+
+// 6. LEAVE_TYPE ENTITY
+model LeaveType {
+  leave_type_id String         @id @default(uuid()) @db.Uuid
+  name          String         @unique @db.VarChar(50) // e.g., Annual, Sick, Maternity
+  description   String?        @db.Text
+  is_paid       Boolean        @default(true)
+  
+  // Relationships
+  leave_requests LeaveRequest[]
+  leave_balances LeaveBalance[]
+}
+
+// 7. LEAVE_BALANCE ENTITY
+model LeaveBalance {
+  balance_id     String    @id @default(uuid()) @db.Uuid
+  employee_id    String    @db.Uuid
+  leave_type_id  String    @db.Uuid
+  total_days     Int
+  used_days      Int       @default(0)
+  remaining_days Int
+
+  // Relationships
+  employee       Employee  @relation(fields: [employee_id], references: [employee_id], onDelete: Cascade)
+  leave_type     LeaveType @relation(fields: [leave_type_id], references: [leave_type_id])
+
+  @@unique([employee_id, leave_type_id]) // One balance tracking row per employee per leave type
+}
+
+// 8. GRIEVANCE ENTITY
+model Grievance {
+  grievance_id String   @id @default(uuid()) @db.Uuid
+  employee_id  String?  @db.Uuid // Nullable to handle Anonymous submissions
+  title        String   @db.VarChar(150)
+  description  String   @db.Text
+  category     String   @db.VarChar(50) // Workplace issue, Harassment, Salary, Other
+  is_anonymous Boolean  @default(false)
+  status       String   @default("Under Review") @db.VarChar(30) // Under Review, Resolved, Rejected
+  created_at   DateTime @default(now()) @db.Timestamp()
+
+  // Relationships
+  employee     Employee? @relation(fields: [employee_id], references: [employee_id], onDelete: SetNull)
+}
+
+// 9. SESSION / TOKEN ENTITY
+model Session {
+  token_id    String   @id @default(uuid()) @db.Uuid
+  employee_id String   @db.Uuid
+  token       String   @db.Text
+  expiry_date DateTime @db.Timestamp()
+
+  // Relationships
+  employee    Employee @relation(fields: [employee_id], references: [employee_id], onDelete: Cascade)
+}
