@@ -8,22 +8,24 @@ async function bootstrap() {
   // 1. Global API Prefix (All endpoints will start with /api)
   app.setGlobalPrefix('api');
 
-  // 2. Global Validation (Handles incoming frontend request data parsing automatically)
+  // 2. Global Validation
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Strips away unauthorized data sent by users
-      transform: true, // Automatically converts types (e.g., string id to integer/uuid)
+      whitelist: true,
+      transform: true,
     }),
   );
 
-  // 3. Enable CORS (Crucial so Next.js frontend can fetch data without blocking)
+  // 3. Enable CORS
   app.enableCors({
-    origin: true, // In production, replace with your frontend URL
+    origin: true,
     credentials: true,
   });
 
-  // Listen on port 5000 (standard for backend API to avoid port conflicts with Next.js on 3000)
-  await app.listen(5000);
-  console.log(`🚀 Backend application is running on: http://localhost:5000/api`);
+  // Dynamic Port Binding: Checks process.env.PORT provided by Docker Compose
+  const port = process.env.PORT || 5000;
+  await app.listen(port);
+  
+  console.log(`🚀 Backend application is running on: http://localhost:${port}/api`);
 }
 bootstrap();
