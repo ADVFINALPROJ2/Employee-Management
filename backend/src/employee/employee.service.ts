@@ -1,14 +1,18 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
+
 
 
 @Injectable()
 export class EmployeeService {
   constructor(private prisma:PrismaService){}
+  
 
   async create(createEmployeeDto: CreateEmployeeDto) {
+    const hashedPassword = await bcrypt.hash(createEmployeeDto.password, 10);
     const emp = await this.prisma.employee.findUnique({
       where:{email:createEmployeeDto.email}
     })
@@ -19,7 +23,7 @@ export class EmployeeService {
     const data = {
       full_name: createEmployeeDto.full_name,
         email: createEmployeeDto.email,
-        password: createEmployeeDto.password, 
+        password: hashedPassword, 
         phone: createEmployeeDto.phone,
         role: createEmployeeDto.role || 'Employee',
         status: 'Active',
@@ -30,7 +34,7 @@ export class EmployeeService {
     return this.prisma.employee.create({data:data})
   }
 
-  findAll(query:{department_id?:string, role?:string, status?:string, search?:string}) {
+  async findAll(query:{department_id?:string, role?:string, status?:string, search?:string}) {
     const {department_id,role,status,search} = query;
     const where: any ={}
     
@@ -54,29 +58,50 @@ export class EmployeeService {
       ];
     }
 
-    return this.prisma.employee.findMany({
+    const employees = await this.prisma.employee.findMany({
       where,
-      include:{department:true,},
-      orderBy:{full_name:'asc'}
+      include: { department: true },
+      orderBy: { full_name: 'asc' }
     });
+
+    return employees.map(({ password, ...employeeWithoutPassword })=> employeeWithoutPassword);
   }
 
-  findOne(id: string) {
-    return this.prisma.employee.findUnique({
-       where: { employee_id: id },
+  async findOne(id: string) {
+    const employee = await this.prisma.employee.findUnique({
+      where: { employee_id: id },
       include: {
         department: true,
         attendances: true,
         leave_requests: true,
       },
     });
+    if (!employee) return null;
+
+    const { password, ...employeeWithoutPassword } = employee;
+    return employeeWithoutPassword;
   }
 
-  update(id: number, updateEmployeeDto: UpdateEmployeeDto) {
-    return `This action updates a #${id} employee`;
+   async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
+    const employee = await this.prisma.employee.findUnique({
+      where:{employee_id:id}
+    });
+
+    if(!employee){
+      throw new NotFoundException('Employee not Found')
+    }
+
+    if (updateEmployeeDto.password){
+      updateEmployeeDto.password = await bcrypt.hash(updateEmployeeDto.password, 10);
+    }
+
+    return this.prisma.employee.update({
+      where:{employee_id:id},
+      data:updateEmployeeDto
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} employee`;
-  }
+  // remove(id: number) {
+  //   return `This action removes a #${id} employee`;
+  // }
 }
