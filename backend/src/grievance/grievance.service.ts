@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'; // Adjust path based on your exact layout
-import { CreateGrievanceDto } from './dto/create-grievance.dto';[cite: 1]
-import { UpdateGrievanceStatusDto } from './dto/update-grievance-status.dto';[cite: 1]
+import { CreateGrievanceDto } from './dto/create-grievance.dto';
+import { UpdateGrievanceStatusDto } from './dto/update-grievance-status.dto';
 
 @Injectable()
 export class GrievanceService {
