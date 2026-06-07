@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsBoolean, IsOptional, IsUUID, MaxLength } from 'class-validation';
+import { IsNotEmpty, IsString, IsBoolean, IsOptional, IsUUID, MaxLength, IsIn } from 'class-validation';
 
 export class CreateGrievanceDto {
   @IsString()
