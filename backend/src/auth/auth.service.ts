@@ -1,8 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { createHmac, scrypt, timingSafeEqual } from 'crypto';
+import { createHash, createHmac, randomBytes, scrypt, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
 import { PrismaService } from '../prisma/prisma.service';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 const scryptAsync = promisify(scrypt);
 
@@ -61,6 +63,67 @@ export class AuthService {
         status: employee.status,
       },
     };
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const email = forgotPasswordDto.email.trim().toLowerCase();
+
+    const employee = await this.prisma.employee.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
+    });
+
+    if (employee) {
+      const rawToken = randomBytes(32).toString('hex');
+      const tokenHash = createHash('sha256').update(rawToken).digest('hex');
+
+      await this.prisma.passwordResetToken.create({
+        data: {
+          employee_id: employee.employee_id,
+          token_hash: tokenHash,
+          expires_at: new Date(Date.now() + 60 * 60 * 1000),
+        },
+      });
+
+      console.log(`[DEV] Password reset link: http://localhost:3000/reset-password?token=${rawToken}`);
+    }
+
+    return { message: 'If an account with that email exists, a reset link has been sent.' };
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const tokenHash = createHash('sha256').update(resetPasswordDto.token).digest('hex');
+
+    const resetToken = await this.prisma.passwordResetToken.findFirst({
+      where: {
+        token_hash: tokenHash,
+        used_at: null,
+        expires_at: { gt: new Date() },
+      },
+    });
+
+    if (!resetToken) {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+
+    const salt = randomBytes(16).toString('hex');
+    const hashedPassword = (await scryptAsync(resetPasswordDto.newPassword, salt, 64)) as Buffer;
+    const storedPassword = `scrypt:${salt}:${hashedPassword.toString('hex')}`;
+
+    await this.prisma.$transaction([
+      this.prisma.employee.update({
+        where: { employee_id: resetToken.employee_id },
+        data: { password: storedPassword },
+      }),
+      this.prisma.passwordResetToken.update({
+        where: { id: resetToken.id },
+        data: { used_at: new Date() },
+      }),
+      this.prisma.session.deleteMany({
+        where: { employee_id: resetToken.employee_id },
+      }),
+    ]);
+
+    return { message: 'Password has been reset successfully.' };
   }
 
   private createToken(payload: Record<string, string | number>) {
