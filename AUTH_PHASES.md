@@ -31,22 +31,14 @@ Expected result:
 
 ## Phase 3: Forgot Password
 
-Goal: allow employees to reset a forgotten password safely.
+Status: implemented.
 
-Tasks:
-- Add `forgot-password` endpoint.
-- Add `reset-password` endpoint.
-- Generate short-lived reset tokens.
-- Store reset tokens hashed, not plain text.
-- Send reset links by email or log them only in development.
-- Add password reset DTO validation.
-- Add frontend reset-password page when the backend flow is ready.
-
-Expected result:
-- User can request a reset link by email.
-- Reset links expire.
-- Password changes invalidate the reset token.
-- The response does not reveal whether an email exists.
+Scope:
+- `POST /auth/forgot-password` accepts email, generates a random token (SHA-256 hashed for storage, 1-hour expiry), logs the reset link in development.
+- `POST /auth/reset-password` accepts token + new password, validates the hash, updates the password (scrypt-hashed), marks the token used, and invalidates all existing sessions.
+- DTOs with class-validator for email and password constraints.
+- `PasswordResetToken` model with token_hash, expires_at, used_at.
+- Response never reveals whether an email exists.
 
 ## Phase 4: Missing Pieces And Hardening
 
