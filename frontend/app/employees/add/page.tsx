@@ -1,10 +1,47 @@
-export default function AddEmployeePage() {
+"use client";
+
+import { useState } from "react";
+import { employeeApi } from "@/lib/employee-api";
+import { useRouter } from "next/navigation";
+
+export default function AddEmployee() {
+  const router = useRouter();
+
+  const [form, setForm] = useState({
+    full_name: "",
+    email: "",
+    password: "",
+    phone: "",
+    position: "",
+    department_id: "",
+  });
+
+  const handleChange = (e: any) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+
+    try {
+      await employeeApi.create(form);
+      router.push("/employees");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create employee");
+    }
+  };
+
   return (
-    <div className="mx-auto max-w-2xl p-8">
-      <h1 className="text-2xl font-bold text-gray-800">Add Employee</h1>
-      <div className="mt-6 rounded-lg bg-white p-6 text-gray-500 shadow">
-        Employee creation form will appear here.
-      </div>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <input name="full_name" placeholder="Full Name" onChange={handleChange} />
+      <input name="email" placeholder="Email" onChange={handleChange} />
+      <input name="password" type="password" placeholder="Password" onChange={handleChange} />
+      <input name="phone" placeholder="Phone" onChange={handleChange} />
+      <input name="position" placeholder="Position" onChange={handleChange} />
+      <input name="department_id" placeholder="Department ID" onChange={handleChange} />
+
+      <button type="submit">Create</button>
+    </form>
   );
 }
