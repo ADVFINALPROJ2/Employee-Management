@@ -1,9 +1,10 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException,InternalServerErrorException } from '@nestjs/common';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-
+import { Prisma } from '@prisma/client';
+import { stat } from 'fs';
 
 
 @Injectable()
@@ -20,51 +21,79 @@ export class EmployeeService {
       throw new BadRequestException('Email already exists')
     }
 
-    const data = {
-      full_name: createEmployeeDto.full_name,
+    return this.prisma.employee.create({
+      data: {
+        full_name: createEmployeeDto.full_name,
         email: createEmployeeDto.email,
         password: hashedPassword, 
         phone: createEmployeeDto.phone,
         role: createEmployeeDto.role || 'Employee',
         status: 'Active',
         hire_date: createEmployeeDto.hire_date? new Date(createEmployeeDto.hire_date): new Date(),
-        department_id: createEmployeeDto.department_id,
+        
         position: createEmployeeDto.position,
-    }
-    return this.prisma.employee.create({data:data})
+        department: createEmployeeDto.department_id
+          ? {
+            connect: { department_id: createEmployeeDto.department_id },
+          }
+          : undefined,
+
+        address:createEmployeeDto.address?{
+          create:{
+            country: createEmployeeDto.address.country,
+            city: createEmployeeDto.address.city,
+            state: createEmployeeDto.address.state,
+          },
+        }
+        : undefined
+      },
+      include:{
+        address:true,
+        department:true,
+      }
+    }) ;
   }
 
-  async findAll(query:{department_id?:string, role?:string, status?:string, search?:string}) {
-    const {department_id,role,status,search} = query;
-    const where: any ={}
-    
-    if (department_id){
-      where.department_id = department_id;
-    }
-    if (role){
-      where.role = role;
-    }
-    if (status){
-      where.status = status;
+  async findAll(query: { department_id?: string; role?: string; status?: string; search?: string; employee_id?: string }) {
+    const { department_id, role, status, search, employee_id } = query;
+    const where: any = {};
+
+    if (department_id) where.department_id = department_id;
+    if (role) where.role = role;
+    if (status) where.status = status;
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(employee_id || '');
+    if (employee_id && isUuid) {
+      where.employee_id = employee_id;
     }
 
-    if (search){
-      where.OR =[
-        { employee_id: { contains: search, mode: 'insensitive' } },
-        { full_name: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { phone: { contains: search, mode: 'insensitive' } },
-        { position: { contains: search, mode: 'insensitive' } },
+    if (search) {
+      where.AND = [
+        ...(where.status ? [{ status: where.status }] : []),
+        {
+          OR: [
+            { full_name: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+            { phone: { contains: search, mode: 'insensitive' } },
+            { position: { contains: search, mode: 'insensitive' } },
+          ],
+        },
       ];
+      delete where.status;
     }
 
-    const employees = await this.prisma.employee.findMany({
-      where,
-      include: { department: true },
-      orderBy: { full_name: 'asc' }
-    });
+    try {
+      const employees = await this.prisma.employee.findMany({
+        where,
+        include: { department: true, address: true },
+        orderBy: { full_name: 'asc' }
+      });
 
-    return employees.map(({ password, ...employeeWithoutPassword })=> employeeWithoutPassword);
+      return employees.map(({ password, ...employeeWithoutPassword }) => employeeWithoutPassword);
+    } catch (error) {
+      console.error("Prisma Error:", error);
+      throw new InternalServerErrorException("Database query failed");
+    }
   }
 
   async findOne(id: string) {
@@ -74,6 +103,7 @@ export class EmployeeService {
         department: true,
         attendances: true,
         leave_requests: true,
+        address:true
       },
     });
     if (!employee) return null;
@@ -82,26 +112,73 @@ export class EmployeeService {
     return employeeWithoutPassword;
   }
 
-   async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
+  async update(id: string, dto: UpdateEmployeeDto) {
     const employee = await this.prisma.employee.findUnique({
-      where:{employee_id:id}
+      where: { employee_id: id },
+      include: { address: true },
     });
 
-    if(!employee){
-      throw new NotFoundException('Employee not Found')
+    if (!employee) {
+      throw new NotFoundException('Employee not found');
     }
 
-    if (updateEmployeeDto.password){
-      updateEmployeeDto.password = await bcrypt.hash(updateEmployeeDto.password, 10);
+    if (dto.password) {
+      dto.password = await bcrypt.hash(dto.password, 10);
     }
+
+    const { address, department_id, ...rest } = dto;
 
     return this.prisma.employee.update({
-      where:{employee_id:id},
-      data:updateEmployeeDto
+      where: { employee_id: id },
+      data: {
+        ...rest,
+        department: department_id
+          ? { connect: { department_id } }
+          : undefined,
+
+        ...(address && {
+          address: employee.address
+            ? {
+                update: {
+                  country: address.country,
+                  city: address.city,
+                  state: address.state,
+                },
+              }
+            : {
+                create: {
+                  country: address.country,
+                  city: address.city,
+                  state: address.state,
+                },
+              },
+        }),
+      },
+      include: {
+        address: true,
+        department: true,
+      },
     });
   }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} employee`;
-  // }
+  async remove(id: string) {
+    const employee = await this.prisma.employee.findUnique({
+      where: { employee_id: id },
+    });
+
+    if (!employee) {
+      throw new NotFoundException('Employee not found');
+    }
+
+    if (employee.status === 'Inactive') {
+      throw new NotFoundException('Employee already deleted');
+    }
+
+    return this.prisma.employee.update({
+      where: { employee_id: id },
+      data: {
+        status: 'Inactive', 
+      },
+    });
+  }
 }

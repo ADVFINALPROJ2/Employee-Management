@@ -28,8 +28,8 @@ export class EmployeeController {
     return this.employeeService.update(id, updateEmployeeDto);
   }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.employeeService.remove(id);
-  // }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.employeeService.remove(id);
+  }
 }

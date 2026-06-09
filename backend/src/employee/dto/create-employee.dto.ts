@@ -26,4 +26,11 @@ export class CreateEmployeeDto {
   @IsOptional()
   @IsDateString()
   hire_date?: string;
+
+  @IsOptional()
+  address?: {
+    country: string;
+    city: string;
+    state?: string;
+  };
 }
