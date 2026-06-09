@@ -35,6 +35,7 @@ model Employee {
   leave_balances LeaveBalance[]
   grievances    Grievance[]
   sessions      Session[]
+  password_reset_tokens PasswordResetToken[]
 }
 
 // 2. DEPARTMENT ENTITY
@@ -145,4 +146,19 @@ model Session {
 
   // Relationships
   employee    Employee @relation(fields: [employee_id], references: [employee_id], onDelete: Cascade)
+}
+
+// 10. PASSWORD RESET TOKEN ENTITY
+model PasswordResetToken {
+  id          String   @id @default(uuid()) @db.Uuid
+  employee_id String   @db.Uuid
+  token_hash  String   @db.Text
+  expires_at  DateTime @db.Timestamp()
+  used_at     DateTime? @db.Timestamp()
+  created_at  DateTime @default(now()) @db.Timestamp()
+
+  // Relationships
+  employee    Employee @relation(fields: [employee_id], references: [employee_id], onDelete: Cascade)
+
+  @@index([token_hash])
 }

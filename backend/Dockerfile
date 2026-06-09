@@ -12,6 +12,7 @@ COPY . .
 RUN npx prisma generate
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+EXPOSE 7000
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["npm", "run", "start:dev"]
 
@@ -34,6 +35,6 @@ COPY --from=build /usr/src/app/prisma ./prisma
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-EXPOSE 3001
+EXPOSE 7000
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "dist/main"]

@@ -8,9 +8,10 @@ import { AttendanceModule } from './attendance/attendance.module';
 import { LeaveModule } from './leave/leave.module';
 import { GrievanceModule } from './grievance/grievance.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { EmployeeModule } from './employee/employee.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, AttendanceModule, LeaveModule, GrievanceModule, DashboardModule],
+  imports: [PrismaModule, AuthModule, UsersModule, AttendanceModule, LeaveModule, GrievanceModule, DashboardModule, EmployeeModule],
   controllers: [AppController],
   providers: [AppService],
 })
