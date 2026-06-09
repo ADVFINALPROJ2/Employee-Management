@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, OnModuleInit, UnauthorizedException } from '@nestjs/common';
 import { createHash, createHmac, randomBytes, scrypt, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
 import { PrismaService } from '../prisma/prisma.service';
@@ -9,8 +9,90 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 const scryptAsync = promisify(scrypt);
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
+
+  async onModuleInit() {
+    this.cleanupExpiredSessions();
+    setInterval(() => this.cleanupExpiredSessions(), 60 * 60 * 1000);
+  }
+
+  async validateSession(employeeId: string, token: string) {
+    const session = await this.prisma.session.findFirst({
+      where: {
+        employee_id: employeeId,
+        token,
+        expiry_date: { gt: new Date() },
+      },
+      include: {
+        employee: {
+          select: {
+            employee_id: true,
+            full_name: true,
+            email: true,
+            role: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    if (!session || session.employee.status !== 'Active') {
+      throw new UnauthorizedException('Invalid or expired session');
+    }
+
+    return session.employee;
+  }
+
+  async logout(token: string) {
+    await this.prisma.session.deleteMany({ where: { token } });
+    return { message: 'Logged out successfully' };
+  }
+
+  async refresh(token: string) {
+    const session = await this.prisma.session.findFirst({
+      where: {
+        token,
+        expiry_date: { gt: new Date() },
+      },
+      include: { employee: true },
+    });
+
+    if (!session || session.employee.status !== 'Active') {
+      throw new UnauthorizedException('Invalid or expired session');
+    }
+
+    const expiresAt = new Date(Date.now() + this.getExpiryMs());
+    const newToken = this.createToken({
+      sub: session.employee.employee_id,
+      email: session.employee.email,
+      role: session.employee.role,
+      exp: Math.floor(expiresAt.getTime() / 1000),
+    });
+
+    await this.prisma.$transaction([
+      this.prisma.session.delete({ where: { token_id: session.token_id } }),
+      this.prisma.session.create({
+        data: {
+          employee_id: session.employee.employee_id,
+          token: newToken,
+          expiry_date: expiresAt,
+        },
+      }),
+    ]);
+
+    return {
+      token: newToken,
+      tokenType: 'Bearer',
+      expiresAt: expiresAt.toISOString(),
+    };
+  }
+
+  async cleanupExpiredSessions() {
+    await this.prisma.session.deleteMany({
+      where: { expiry_date: { lte: new Date() } },
+    });
+  }
 
   async login(loginDto: LoginDto) {
     const employee = await this.prisma.employee.findFirst({
@@ -50,6 +132,8 @@ export class AuthService {
         expiry_date: expiresAt,
       },
     });
+
+    this.cleanupExpiredSessions();
 
     return {
       token,
@@ -143,10 +227,6 @@ export class AuthService {
   }
 
   private async verifyPassword(password: string, storedPassword: string) {
-    if (!storedPassword.startsWith('scrypt:')) {
-      return password === storedPassword;
-    }
-
     const [, salt, hash] = storedPassword.split(':');
     if (!salt || !hash) {
       return false;
