@@ -3,12 +3,14 @@
 import { useState } from 'react';
 
 export default function LeaveRequestPage() {
+  // 1. Define all the state variables so the inputs stop being red
   const [leaveTypeId, setLeaveTypeId] = useState('Annual'); 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [reason, setReason] = useState(''); 
   const [loading, setLoading] = useState(false);
 
+  // 2. Define the submit handler function so onSubmit stops being red
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -46,6 +48,7 @@ export default function LeaveRequestPage() {
     }
   };
 
+  // 3. Now the return block safely uses the variables defined above
   return (
     <div className="p-6 max-w-md mx-auto">
       <h1 className="text-xl font-bold mb-4">Submit Leave Request</h1>

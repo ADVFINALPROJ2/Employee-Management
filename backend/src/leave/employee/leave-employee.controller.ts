@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-import { Controller, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-
-@Controller('leave')
-@UseGuards(JwtAuthGuard)
-export class LeaveController {}
-=======
 import { Controller, Get, Post, Put, Body, Param } from '@nestjs/common';
 import { LeaveService } from './leave.service';
 import { CreateLeaveRequestDto } from './dto/create-leave-request.dto';
@@ -37,4 +29,4 @@ export class LeaveController {
     );
   }
 }
->>>>>>> 71a63f69955365dcdacaccd7d861c98498371dbb
+

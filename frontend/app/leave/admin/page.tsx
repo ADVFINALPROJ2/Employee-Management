@@ -26,11 +26,7 @@ export default function AdminLeavePage() {
   }, []);
 
   return (
-    // We apply an inline CSS transform scale to accurately simulate a structural zoom-in
-    <div 
-      className="min-h-screen bg-[#f8fafc] text-slate-900 antialiased p-6 md:p-12 origin-top"
-      style={{ transform: 'scale(1.08)', width: '92.5%', margin: '0 auto' }}
-    >
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 antialiased px-4 py-8 md:px-12 md:py-10">
       <div className="w-full max-w-7xl mx-auto space-y-8">
         
         {/* Header Module */}
@@ -43,16 +39,16 @@ export default function AdminLeavePage() {
           </p>
         </div>
 
-        {/* Dashboard Frame Content wrapper */}
+        {/* Dashboard Frame Content Wrapper */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 space-y-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex flex-col items-center justify-center py-24 space-y-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
             <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
             <p className="text-slate-400 font-bold text-xs tracking-wider animate-pulse uppercase">
               Loading Records...
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-2">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
             <LeaveAdminTable requests={requests} onRefresh={fetchRequests} />
           </div>
         )}
