@@ -34,17 +34,15 @@ services:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${BACKEND_PORT_CONTAINER:-3001}
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-securepassword123}@postgres_db:5432/${DB_NAME:-ems_db}?schema=public
-    volumes:
-      - ./backend:/usr/src/app
-      - /usr/src/app/node_modules
     depends_on:
       postgres_db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${BACKEND_PORT_CONTAINER:-3001}/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${BACKEND_PORT_CONTAINER:-3001}/api/health"]
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 60s
     networks:
       - ems_network
 
@@ -64,10 +62,6 @@ services:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${FRONTEND_PORT_CONTAINER:-3000}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
-    volumes:
-      - ./frontend:/usr/src/app
-      - /usr/src/app/node_modules
-      - /usr/src/app/.next
     depends_on:
       backend:
         condition: service_healthy
@@ -76,6 +70,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 60s
     networks:
       - ems_network
 
