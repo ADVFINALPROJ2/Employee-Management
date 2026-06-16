@@ -62,6 +62,8 @@ services:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${FRONTEND_PORT_CONTAINER:-3000}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+    volumes:
+      - ./frontend:/usr/src/app:Z
     depends_on:
       backend:
         condition: service_healthy
