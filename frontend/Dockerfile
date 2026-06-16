@@ -7,7 +7,7 @@ COPY package*.json ./
 FROM base AS development
 RUN npm ci
 COPY . .
-CMD ["npx", "next", "dev", "--webpack"]
+CMD ["npm", "run", "dev"]
 
 # --- STEP 3: BUILD FOR PRODUCTION ---
 FROM base AS build
