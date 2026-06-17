@@ -1,6 +1,7 @@
 # --- STEP 1: BASE INSTALLATION ---
 FROM node:20-bookworm-slim AS base
 WORKDIR /usr/src/app
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 COPY package*.json ./
 
 # --- STEP 2: DEVELOPMENT TARGET ---
