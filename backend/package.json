@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "dev": "PORT=7000 nest start --watch",
+    "dev": "PORT=7000 node -r ts-node/register -r tsconfig-paths/register src/main.ts",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
