@@ -2,10 +2,9 @@ import { Controller, Post, Get, Patch, Body, Param, UseGuards, Request } from '@
 import { GrievanceService } from './grievance.service';
 import { CreateGrievanceDto } from './dto/create-grievance.dto';
 import { UpdateGrievanceStatusDto } from './dto/update-grievance-status.dto';
-// These paths will now resolve perfectly because you created the files!
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 @Controller('grievance')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class GrievanceController {
@@ -22,7 +21,7 @@ export class GrievanceController {
     @Request() req: any
   ) {
     // Extracts the verified employee ID from the JWT token attached to the request
-    const currentEmployeeId = req.user.userId; 
+    const currentEmployeeId = req.user.employee_id; 
     return this.grievanceService.create(createGrievanceDto, currentEmployeeId);
   }
 
