@@ -1,4 +1,7 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
+const BASE_URL =
+  typeof window === 'undefined'
+    ? process.env.INTERNAL_API_URL || 'http://backend:7000/api'
+    : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
 
 export class ApiError extends Error {
   status: number;
@@ -44,5 +47,28 @@ export const apiClient = {
       body: JSON.stringify(body),
     });
     return parseResponse(response);
+  },
+async patch(endpoint: string, body: any, token?: string) {
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(body),
+    });
+    return parseResponse(response);
+  },
+
+  async delete(endpoint: string, token?: string) {
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      method: 'DELETE',
+      headers,
+    });
+    return parseResponse(response);
   }
 };
+

@@ -24,7 +24,7 @@ async function bootstrap() {
 
   // Dynamic Port Binding: Checks process.env.PORT provided by Docker Compose
   const port = process.env.PORT || 5000;
-  await app.listen(port);
+  await app.listen(port,'0.0.0.0');
   
   console.log(`🚀 Backend application is running on: http://localhost:${port}/api`);
 }
