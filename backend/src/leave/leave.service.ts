@@ -35,7 +35,7 @@ export class LeaveService {
     const balance = await this.prisma.leaveBalance.findUnique({
       where: {
         employee_id_leave_type_id: {
-          employee_id: dto.employeeId,
+          employee_id: dto.employeeId!,
           leave_type_id: dto.leaveTypeId,
         },
       },
@@ -53,7 +53,7 @@ export class LeaveService {
 
     const leaveRequest = await this.prisma.leaveRequest.create({
       data: {
-        employee_id: dto.employeeId,
+        employee_id: dto.employeeId!,
         leave_type_id: dto.leaveTypeId,
         start_date: startDate,
         end_date: endDate,
