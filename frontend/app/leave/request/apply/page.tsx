@@ -101,7 +101,7 @@ export default function ApplyLeavePage() {
   };
 
   return (
-    <div style={{ background: '#f3f4f6', minHeight: '100vh', padding: '32px', fontFamily: 'sans-serif' }}>
+    <div style={{ background: 'white', minHeight: '100vh', padding: '32px', fontFamily: 'sans-serif' }}>
       <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#111827', marginBottom: '16px' }}>
         Leave Request Form
       </h1>
@@ -111,7 +111,7 @@ export default function ApplyLeavePage() {
           Submit a New Leave Request
         </h2>
 
-        <div style={{ background: '#EBF4FF', borderRadius: '12px', border: '1px solid #BFDBFE', padding: '24px' }}>
+        <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', padding: '24px' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '24px', alignItems: 'flex-end' }}>
             <div style={{ flex: '1 1 180px', minWidth: '160px' }}>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '8px', whiteSpace: 'nowrap' }}>
@@ -190,8 +190,8 @@ export default function ApplyLeavePage() {
                 onDragLeave={() => setDragging(false)}
                 onDrop={handleDrop}
                 style={{
-                  height: '240px', border: '2px dashed #93C5FD', borderRadius: '12px',
-                  background: dragging ? '#BFDBFE' : '#DBEAFE',
+                  height: '240px', border: '2px dashed #d1d5db', borderRadius: '12px',
+                  background: dragging ? '#f9fafb' : 'white',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   gap: '8px', cursor: 'pointer'
                 }}
@@ -223,7 +223,7 @@ export default function ApplyLeavePage() {
             <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#374151', marginBottom: '12px' }}>Leave Balance</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               {balances.map((b) => (
-                <div key={b.leaveType} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '16px', background: '#EBF4FF' }}>
+                <div key={b.leaveType} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '16px', background: 'white' }}>
                   <p style={{ fontSize: '13px', fontWeight: 500, color: '#374151', marginBottom: '8px' }}>{b.leaveType}</p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#6b7280' }}>
                     <span>Total: {b.total}</span>
