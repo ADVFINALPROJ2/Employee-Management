@@ -34,6 +34,10 @@ services:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${BACKEND_PORT_CONTAINER:-3001}
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-securepassword123}@postgres_db:5432/${DB_NAME:-ems_db}?schema=public
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+      # - /usr/src/app/dist
     depends_on:
       postgres_db:
         condition: service_healthy
