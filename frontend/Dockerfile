@@ -1,31 +1,30 @@
-FROM node:20-alpine AS base
+# --- STEP 1: BASE INSTALLATION ---
+FROM node:20-bookworm-slim AS base
 WORKDIR /usr/src/app
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 COPY package*.json ./
 
+# --- STEP 2: DEVELOPMENT TARGET ---
 FROM base AS development
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN npm install
+RUN npm ci
 COPY . .
-EXPOSE 7001
 CMD ["npm", "run", "dev"]
 
+# --- STEP 3: BUILD FOR PRODUCTION ---
 FROM base AS build
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm ci
 COPY . .
 RUN npm run build
 RUN npm prune --production
 
-FROM node:20-alpine AS production
+# --- STEP 4: PRODUCTION RUNTIME ---
+FROM node:20-bookworm-slim AS production
 WORKDIR /usr/src/app
-RUN apk add --no-cache wget
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 COPY --from=build /usr/src/app/package*.json ./
 COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/.next ./.next
 COPY --from=build /usr/src/app/public ./public
-COPY --from=build /usr/src/app/next.config.ts ./
 
-EXPOSE 7001
+EXPOSE 3000
 CMD ["npm", "run", "start"]

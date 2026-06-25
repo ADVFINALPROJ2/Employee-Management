@@ -1,5 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { createHmac } from 'crypto';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from '../auth.service';
 
 @Injectable()
@@ -19,41 +18,10 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid authorization header format');
     }
 
-    const payload = this.verifyToken(token);
-    const employee = await this.authService.validateSession(
-      payload.sub as string,
-      token,
-    );
+    const payload = this.authService.verifyToken(token);
+    const employee = await this.authService.validateSession(payload.sub, token);
 
     request.user = employee;
     return true;
-  }
-
-  private verifyToken(token: string): Record<string, unknown> {
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      throw new UnauthorizedException('Invalid token format');
-    }
-
-    const [header, body, signature] = parts;
-    const expectedSig = createHmac('sha256', this.getJwtSecret())
-      .update(`${header}.${body}`)
-      .digest('base64url');
-
-    if (signature !== expectedSig) {
-      throw new UnauthorizedException('Invalid token signature');
-    }
-
-    const payload = JSON.parse(Buffer.from(body, 'base64url').toString());
-
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-      throw new UnauthorizedException('Token has expired');
-    }
-
-    return payload;
-  }
-
-  private getJwtSecret() {
-    return process.env.JWT_SECRET || 'development-secret';
   }
 }
