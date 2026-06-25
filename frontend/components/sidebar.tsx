@@ -34,13 +34,6 @@ const sidebarLinks: LinkGroup[] = [
     ],
   },
   {
-    group: "Attendance",
-    items: [
-      { label: "My Attendance", href: "/attendance", icon: "⏱️" },
-      { label: "Admin View", href: "/attendance/admin", icon: "📋", adminOnly: true },
-    ],
-  },
-  {
     group: "Leave",
     items: [
       { label: "Request Leave", href: "/leave/request", icon: "📝" },
