@@ -10,6 +10,7 @@ interface LinkItem {
   href: string;
   icon: string;
   adminOnly?: boolean;
+  employeeOnly?: boolean;
 }
 
 interface LinkGroup {
@@ -22,7 +23,7 @@ const sidebarLinks: LinkGroup[] = [
     group: "Main",
     items: [
       { label: "Dashboard", href: "/dashboard/admin", icon: "📊", adminOnly: true },
-      { label: "Employee Dashboard", href: "/dashboard/employee", icon: "👤" },
+      { label: "Employee Dashboard", href: "/dashboard/employee", icon: "👤", employeeOnly: true },
     ],
   },
   {
@@ -72,7 +73,11 @@ export default function Sidebar() {
   const filteredGroups = sidebarLinks
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => !item.adminOnly || role === "Admin"),
+      items: group.items.filter(
+        (item) =>
+          (!item.adminOnly || role === "Admin") &&
+          (!item.employeeOnly || role !== "Admin")
+      ),
     }))
     .filter((group) => group.items.length > 0);
 
