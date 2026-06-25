@@ -3,14 +3,14 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateLeaveRequestDto } from './dto/create-leave-request.dto';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CreateLeaveDto } from './dto/create-leave.dto';
 
 @Injectable()
-export class LeaveService {
+export class LeaveEmployeeService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createLeaveRequest(dto: CreateLeaveRequestDto) {
+  async submitLeave(dto: CreateLeaveDto) {
     const employee = await this.prisma.employee.findUnique({
       where: { employee_id: dto.employeeId },
     });
@@ -28,7 +28,6 @@ export class LeaveService {
       throw new BadRequestException('End date cant be before start date');
     }
 
-    // calculate how many days they're requesting
     const msPerDay = 1000 * 60 * 60 * 24;
     const daysRequested = Math.floor((endDate.getTime() - startDate.getTime()) / msPerDay) + 1;
 
@@ -61,18 +60,8 @@ export class LeaveService {
         status: 'Pending',
       },
       include: {
-        employee: {
-          select: {
-            employee_id: true,
-            full_name: true,
-            email: true,
-          },
-        },
         leave_type: {
-          select: {
-            name: true,
-            is_paid: true,
-          },
+          select: { name: true, is_paid: true },
         },
       },
     });
@@ -83,25 +72,7 @@ export class LeaveService {
     };
   }
 
-  async getLeaveHistory(employeeId: string) {
-    const history = await this.prisma.leaveRequest.findMany({
-      where: { employee_id: employeeId },
-      include: {
-        leave_type: {
-          select: { name: true },
-        },
-      },
-      orderBy: { created_at: 'desc' },
-    });
-
-    if (!history.length) {
-      return { message: 'No leave requests found' };
-    }
-
-    return history;
-  }
-
-  async getLeaveBalances(employeeId: string) {
+  async getBalances(employeeId: string) {
     const balances = await this.prisma.leaveBalance.findMany({
       where: { employee_id: employeeId },
       include: {
@@ -116,8 +87,8 @@ export class LeaveService {
     }
 
     return balances.map((b) => ({
+      leaveTypeId: b.leave_type_id,
       leaveType: b.leave_type.name,
-      description: b.leave_type.description,
       total: b.total_days,
       used: b.used_days,
       remaining: b.remaining_days,
