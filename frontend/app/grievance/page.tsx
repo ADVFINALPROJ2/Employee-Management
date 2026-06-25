@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { grievanceApi } from '@/lib/api';
+import { toast } from '@/lib/toast';
 
 const CATEGORIES = ['Workplace issue', 'Harassment', 'Salary', 'Other'] as const;
 
@@ -12,35 +14,25 @@ export default function EmployeeGrievancePage() {
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     setShowSuccess(false);
     try {
-      const res = await fetch(`${API}/api/grievance`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer mock-token-Employee`,
-        },
-        body: JSON.stringify({
-          title,
-          description,
-          category,
-          is_anonymous: isAnonymous,
-          employee_id: 'mock-user-id',
-        }),
+      await grievanceApi.create({
+        title,
+        description,
+        category,
+        is_anonymous: isAnonymous,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setTitle('');
       setDescription('');
       setCategory(CATEGORIES[0]);
       setIsAnonymous(false);
       setShowSuccess(true);
+      toast({ title: 'Grievance submitted', description: 'Your grievance has been submitted successfully.', variant: 'success' });
     } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : 'Submission failed');
+      toast({ title: 'Submission failed', description: e instanceof Error ? e.message : 'Something went wrong', variant: 'error' });
     } finally {
       setSubmitting(false);
     }

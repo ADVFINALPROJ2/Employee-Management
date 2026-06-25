@@ -20,6 +20,6 @@ export class CreateGrievanceDto {
   is_anonymous?: boolean; // From document: Anonymous (checkbox), DEFAULT FALSE
 
   @IsUUID()
-  @IsNotEmpty()
-  employee_id!: string; // From document: Employee ID (UUID), NOT NULL
+  @IsOptional()
+  employee_id?: string; // From document: Employee ID (UUID), overridden by JWT
 }

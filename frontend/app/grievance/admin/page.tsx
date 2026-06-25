@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { grievanceApi } from '@/lib/api';
+import { toast } from '@/lib/toast';
 
-// --- Types ---
 interface Grievance {
   grievance_id: string;
   title: string;
@@ -52,17 +53,11 @@ export default function AdminGrievancePage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
 
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
   async function fetchGrievances() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API}/api/grievance`, {
-        headers: { Authorization: `Bearer mock-token-Admin` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await grievanceApi.getAll();
       setGrievances(Array.isArray(data) ? data : []);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Failed to load';
@@ -80,25 +75,15 @@ export default function AdminGrievancePage() {
   async function handleStatusUpdate(id: string, newStatus: string) {
     setUpdatingId(id);
     try {
-      const res = await fetch(`${API}/api/grievance/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer mock-token-Admin`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await grievanceApi.updateStatus(id, { status: newStatus });
       fetchGrievances();
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Update failed';
-      alert(msg);
+      toast({ title: 'Update failed', description: e instanceof Error ? e.message : 'Something went wrong', variant: 'error' });
     } finally {
       setUpdatingId(null);
     }
   }
 
-  // --- Filters ---
   const filtered = grievances.filter((g) => {
     const matchSearch =
       g.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -113,7 +98,6 @@ export default function AdminGrievancePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -135,7 +119,6 @@ export default function AdminGrievancePage() {
             </button>
           </div>
 
-          {/* Summary cards */}
           <div className="grid grid-cols-4 gap-4 mt-6">
             {[
               { label: 'Total', value: grievances.length, color: 'text-blue-600 bg-blue-50' },
@@ -154,7 +137,6 @@ export default function AdminGrievancePage() {
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          {/* Filters */}
           <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex-1 min-w-[200px]">
@@ -194,7 +176,6 @@ export default function AdminGrievancePage() {
             </div>
           </div>
 
-          {/* Error */}
           {error && (
             <div className="mx-6 mt-4 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm flex items-center gap-2">
               <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -204,7 +185,6 @@ export default function AdminGrievancePage() {
             </div>
           )}
 
-          {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -308,7 +288,6 @@ export default function AdminGrievancePage() {
             </table>
           </div>
 
-          {/* Footer */}
           {grievances.length > 0 && (
             <div className="px-6 py-3 border-t border-gray-100 bg-gray-50/30 flex items-center justify-between text-xs text-gray-400">
               <span>Showing {filtered.length} of {grievances.length} grievances</span>

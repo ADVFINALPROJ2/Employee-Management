@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { authApi, setToken } from '../../lib/auth';
+import { authApi, setToken, setUser } from '../../lib/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,6 +20,7 @@ export default function LoginPage() {
     try {
       const response = await authApi.login(email, password);
       setToken(response.token);
+      setUser(response.user);
       router.push('/dashboard/employee');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
