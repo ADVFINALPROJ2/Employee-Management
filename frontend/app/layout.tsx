@@ -3,6 +3,7 @@ import "./globals.css";
 import QueryProvider from "@/components/providers/QueryProvider";
 import Navbar from "@/components/navbar";
 import Sidebar from "@/components/sidebar";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "Employee Management System",
@@ -23,6 +24,7 @@ export default function RootLayout({
             <Sidebar />
             <main className="flex-1 p-6 bg-gray-50">{children}</main>
           </div>
+          <Toaster />
         </QueryProvider>
       </body>
     </html>
