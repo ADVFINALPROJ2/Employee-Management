@@ -4,7 +4,6 @@ import EmployeeDashboardClient from "./EmployeeDashboardClient";
 export const dynamic = "force-dynamic";
 
 export default async function EmployeesPage() {
-  // Fetch initial list of employees
   const response = await employeeApi.getAll();
   const initialEmployees = Array.isArray(response) ? response : response.data || [];
 

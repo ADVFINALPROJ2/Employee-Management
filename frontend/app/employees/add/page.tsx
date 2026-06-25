@@ -29,7 +29,7 @@ export default function AddEmployee() {
     position: "",
     department_id: "",
     hire_date: "",
-    role: "Employee", // Default selection matching UI radio buttons
+    role: "Employee", 
     address: {
       country: "",
       city: "",
@@ -52,6 +52,7 @@ export default function AddEmployee() {
       },
     }));
   };
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
