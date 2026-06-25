@@ -1,7 +1,4 @@
-const BASE_URL =
-  typeof window === 'undefined'
-    ? process.env.INTERNAL_API_URL || 'http://backend:7000/api'
-    : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export class ApiError extends Error {
   status: number;
@@ -37,7 +34,7 @@ export const apiClient = {
     return parseResponse(response);
   },
 
-  async post(endpoint: string, body: any, token?: string) {
+  async post(endpoint: string, body: Record<string, unknown>, token?: string) {
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
