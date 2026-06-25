@@ -168,7 +168,6 @@ export class AuthService implements OnModuleInit {
         },
       });
 
-      console.log(`[DEV] Password reset link: http://localhost:3000/reset-password?token=${rawToken}`);
     }
 
     return { message: 'If an account with that email exists, a reset link has been sent.' };
@@ -208,6 +207,34 @@ export class AuthService implements OnModuleInit {
     ]);
 
     return { message: 'Password has been reset successfully.' };
+  }
+
+  verifyToken(token: string): { sub: string; email: string; role: string; exp: number } {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      throw new UnauthorizedException('Invalid token format');
+    }
+
+    const [header, body, signature] = parts;
+
+    const expectedSignature = createHmac('sha256', this.getJwtSecret())
+      .update(`${header}.${body}`)
+      .digest('base64url');
+
+    if (signature !== expectedSignature) {
+      throw new UnauthorizedException('Invalid token signature');
+    }
+
+    const payload = JSON.parse(
+      Buffer.from(body, 'base64url').toString(),
+    ) as { sub: string; email: string; role: string; exp: number };
+
+    const now = Math.floor(Date.now() / 1000);
+    if (payload.exp && payload.exp < now) {
+      throw new UnauthorizedException('Token has expired');
+    }
+
+    return payload;
   }
 
   private createToken(payload: Record<string, string | number>) {

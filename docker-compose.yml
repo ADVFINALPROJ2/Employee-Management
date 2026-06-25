@@ -1,5 +1,5 @@
 services:
-  # PostgreSQL Database Service
+  # 1. PostgreSQL Database Service
   postgres_db:
     image: postgres:15-alpine
     container_name: ems_postgres_container
@@ -20,7 +20,7 @@ services:
     networks:
       - ems_network
 
-  # NestJS Backend Service
+  # 2. NestJS Backend Service
   backend:
     build:
       context: ./backend
@@ -29,54 +29,54 @@ services:
     container_name: ems_backend_container
     restart: always
     ports:
-      - "${BACKEND_PORT_HOST:-7000}:${BACKEND_PORT_CONTAINER:-7000}"
+      - "${BACKEND_PORT_HOST:-3001}:${BACKEND_PORT_CONTAINER:-3001}"
     environment:
       NODE_ENV: ${NODE_ENV:-development}
-      PORT: ${BACKEND_PORT_CONTAINER:-7000}
+      PORT: ${BACKEND_PORT_CONTAINER:-3001}
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-securepassword123}@postgres_db:5432/${DB_NAME:-ems_db}?schema=public
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
-      - /usr/src/app/dist
+      # - /usr/src/app/dist
     depends_on:
       postgres_db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${BACKEND_PORT_CONTAINER:-7000}/api"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${BACKEND_PORT_CONTAINER:-3001}/api/health"]
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 60s
     networks:
       - ems_network
 
-  # Next.js Frontend Service
+  # 3. Next.js Frontend Service
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       target: ${NODE_ENV:-development}
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:7000/api}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     container_name: ems_frontend_container
     restart: always
     ports:
-      - "${FRONTEND_PORT_HOST:-7001}:${FRONTEND_PORT_CONTAINER:-7001}"
+      - "${FRONTEND_PORT_HOST:-3000}:${FRONTEND_PORT_CONTAINER:-3000}"
     environment:
       NODE_ENV: ${NODE_ENV:-development}
-      PORT: ${FRONTEND_PORT_CONTAINER:-7001}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:7000/api}
+      PORT: ${FRONTEND_PORT_CONTAINER:-3000}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     volumes:
-      - ./frontend:/usr/src/app
-      - /usr/src/app/node_modules
-      - /usr/src/app/.next
+      - ./frontend:/usr/src/app:Z
     depends_on:
       backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${FRONTEND_PORT_CONTAINER:-7001}"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${FRONTEND_PORT_CONTAINER:-3000}"]
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 60s
     networks:
       - ems_network
 

@@ -1,10 +1,6 @@
 import { IsNotEmpty, IsString, IsDateString } from 'class-validator';
 
-export class CreateLeaveRequestDto {
-  @IsNotEmpty()
-  @IsString()
-  employeeId!: string;
-
+export class CreateLeaveDto {
   @IsNotEmpty()
   @IsString()
   leaveTypeId!: string;
@@ -20,4 +16,6 @@ export class CreateLeaveRequestDto {
   @IsNotEmpty()
   @IsString()
   reason!: string;
+
+  employeeId?: string;
 }

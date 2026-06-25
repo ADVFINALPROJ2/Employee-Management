@@ -1,13 +1,21 @@
 import { apiClient } from "./api";
 
+export interface EmployeeFilterQuery {
+  search?: string;
+  department_id?: string;
+  status?: string;
+}
+
 export const employeeApi = {
-  getAll: (query = "") => apiClient.get(`/employee${query}`),
+  getAll: (query?: string) =>
+    apiClient.get(`/employee${query ? `?${query}` : ""}`),
 
   getOne: (id: string) => apiClient.get(`/employee/${id}`),
 
   create: (data: any) => apiClient.post("/employee/create", data),
 
-//   update: (id: string, data: any) =>
-//     apiClient.patch(`/employee/${id}`, data),
+  update: (id: string, data: any) =>
+    apiClient.patch(`/employee/${id}`, data),
 
+  remove: (id: string) => apiClient.delete(`/employee/${id}`),
 };
