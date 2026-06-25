@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-securepassword123}
       POSTGRES_DB: ${DB_NAME:-ems_db}
     ports:
-      - "${DB_PORT_HOST:-5433}:5432"
+      - "${DB_PORT_HOST:-5434}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
