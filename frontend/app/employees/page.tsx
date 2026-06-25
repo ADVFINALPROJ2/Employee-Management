@@ -2,7 +2,6 @@ import { employeeApi } from "@/lib/employee-api";
 import EmployeeDashboardClient from "./EmployeeDashboardClient";
 
 export default async function EmployeesPage() {
-  // Fetch initial list of employees
   const response = await employeeApi.getAll();
   const initialEmployees = Array.isArray(response) ? response : response.data || [];
 
