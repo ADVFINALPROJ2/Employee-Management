@@ -19,7 +19,7 @@ export default function LoginPage() {
 
     try {
       const response = await authApi.login(email, password);
-      setToken(response.accessToken);
+      setToken(response.token);
       router.push('/dashboard/employee');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');

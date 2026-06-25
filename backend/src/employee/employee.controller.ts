@@ -8,6 +8,11 @@ import { UpdateEmployeeDto } from './dto/update-employee.dto';
 export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService) {}
 
+  @Get('departments')
+  getDepartments() {
+    return this.employeeService.getDepartments();
+  }
+
   @Post("create")
   create(@Body() createEmployeeDto: CreateEmployeeDto) {
     return this.employeeService.create(createEmployeeDto);
