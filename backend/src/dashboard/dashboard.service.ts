@@ -5,11 +5,11 @@ import { PrismaService } from '../prisma/prisma.service';
 export class DashboardService {
   constructor(private prisma: PrismaService) {}
 
-  async getAdminDashboard() {
-    // existing code
+  async getEmployeeDashboard() {
+    
   }
 
-  async getEmployeeDashboard() {
+  async  getAdminDashboard(){
     const totalEmployees = await this.prisma.employee.count({
       where: {
         status: 'Active',
