@@ -1,6 +1,8 @@
 import { employeeApi } from "@/lib/employee-api";
 import EmployeeDashboardClient from "./EmployeeDashboardClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function EmployeesPage() {
   // Fetch initial list of employees
   const response = await employeeApi.getAll();

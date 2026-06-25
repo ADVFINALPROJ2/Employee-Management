@@ -1,13 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { employeeApi } from "@/lib/employee-api";
 import { useRouter } from "next/navigation";
+
+interface Department {
+  department_id: string;
+  name: string;
+  description: string | null;
+}
 
 export default function AddEmployee() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [departments, setDepartments] = useState<Department[]>([]);
+
+  useEffect(() => {
+    employeeApi.getDepartments()
+      .then(setDepartments)
+      .catch(() => {});
+  }, []);
 
   const [form, setForm] = useState({
     full_name: "",
@@ -164,11 +177,11 @@ export default function AddEmployee() {
                 className="w-full pl-10 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
               >
                 <option value="">Select Department</option>
-                {/* Dynamically replace value strings here with realistic database UUID mappings if required */}
-                <option value="d3b07384-d113-4ec2-a5d6-84d2b2fcd601">Engineering</option>
-                <option value="d3b07384-d113-4ec2-a5d6-84d2b2fcd602">Sales</option>
-                <option value="d3b07384-d113-4ec2-a5d6-84d2b2fcd603">Designer</option>
-                <option value="d3b07384-d113-4ec2-a5d6-84d2b2fcd604">HR</option>
+                {departments.map((dept) => (
+                  <option key={dept.department_id} value={dept.department_id}>
+                    {dept.name}
+                  </option>
+                ))}
               </select>
               <span className="absolute right-3 text-gray-400 pointer-events-none">▼</span>
             </div>

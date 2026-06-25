@@ -12,6 +12,12 @@ export class EmployeeService {
   constructor(private prisma:PrismaService){}
   
 
+  async getDepartments() {
+    return this.prisma.department.findMany({
+      orderBy: { name: 'asc' },
+    });
+  }
+
   async create(createEmployeeDto: CreateEmployeeDto) {
     const hashedPassword = await bcrypt.hash(createEmployeeDto.password, 10);
     const emp = await this.prisma.employee.findUnique({

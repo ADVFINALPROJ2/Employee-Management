@@ -7,7 +7,7 @@ const CATEGORIES = ['Workplace issue', 'Harassment', 'Salary', 'Other'] as const
 export default function EmployeeGrievancePage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [category, setCategory] = useState<string>(CATEGORIES[0]);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);

@@ -168,7 +168,6 @@ export class AuthService implements OnModuleInit {
         },
       });
 
-      console.log(`[DEV] Password reset link: http://localhost:3000/reset-password?token=${rawToken}`);
     }
 
     return { message: 'If an account with that email exists, a reset link has been sent.' };
