@@ -15,7 +15,11 @@ export class CreateEmployeeDto {
   phone?: string;
 
   @IsOptional()
-  role?: string; 
+  role?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: string;
 
   @IsOptional()
   department_id?: string;

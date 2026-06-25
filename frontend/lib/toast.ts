@@ -73,11 +73,15 @@ function dispatch(action: Action) {
   listeners.forEach((listener) => listener(memoryState));
 }
 
-function toast({ title, description, variant }: Omit<ToasterToast, "id">) {
+const toast = (({ title, description, variant }: Omit<ToasterToast, "id">) => {
   const id = genId();
   dispatch({ type: "ADD_TOAST", toast: { id, title, description, variant } });
   dispatch({ type: "DISMISS_TOAST", toastId: id });
-}
+}) as {
+  (params: Omit<ToasterToast, "id">): void;
+  error: (message: string) => void;
+  success: (message: string) => void;
+};
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState);
@@ -96,5 +100,8 @@ function useToast() {
     dismiss: (toastId: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   };
 }
+
+toast.error = (message: string) => toast({ title: message, variant: 'error' });
+toast.success = (message: string) => toast({ title: message, variant: 'success' });
 
 export { toast, useToast };

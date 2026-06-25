@@ -3,6 +3,8 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter } from "next/navigation";
 import { employeeApi } from "@/lib/employee-api";
+import { getUser } from "@/lib/api";
+import { toast } from "@/lib/toast";
 
 interface Employee {
   employee_id: string;
@@ -64,17 +66,38 @@ export default function EmployeeDashboardClient({
     return Array.from(new Set(depts));
   }, [employees]);
 
+  const currentUser = getUser();
   const handleRemove = async (id: string) => {
+    if (currentUser?.id === id) {
+      toast.error("You cannot delete yourself");
+      return;
+    }
     try {
       await employeeApi.remove(id);
 
-      setEmployees((prev) => prev.filter((e) => e.employee_id !== id));
+      setEmployees((prev) =>
+        prev.map((e) =>
+          e.employee_id === id ? { ...e, status: 'Inactive' as const } : e
+        )
+      );
+    } catch (err: any) {
+      const message = err?.message || 'Failed to delete employee';
+      toast.error(message);
+    }
+  };
 
-      if (selectedEmployee?.employee_id === id) {
-        setSelectedEmployee(null);
-      }
-    } catch (err) {
-      console.error(err);
+  const handleReactivate = async (id: string) => {
+    try {
+      await employeeApi.update(id, { status: 'Active' });
+      setEmployees((prev) =>
+        prev.map((e) =>
+          e.employee_id === id ? { ...e, status: 'Active' as const } : e
+        )
+      );
+      toast.success('Employee reactivated');
+    } catch (err: any) {
+      const message = err?.message || 'Failed to reactivate employee';
+      toast.error(message);
     }
   };
 
@@ -160,9 +183,15 @@ export default function EmployeeDashboardClient({
                     Edit
                   </button>
 
-                  <button onClick={() => handleRemove(emp.employee_id)}>
-                    Remove
-                  </button>
+                  {emp.status === 'Active' ? (
+                    <button onClick={() => handleRemove(emp.employee_id)}>
+                      Remove
+                    </button>
+                  ) : (
+                    <button onClick={() => handleReactivate(emp.employee_id)}>
+                      Reactivate
+                    </button>
+                  )}
 
                   <button onClick={() => setSelectedEmployee(emp)}>
                     View
@@ -185,9 +214,15 @@ export default function EmployeeDashboardClient({
                   Update
                 </button>
 
-                <button onClick={() => handleRemove(selectedEmployee.employee_id)}>
-                  Remove
-                </button>
+                {selectedEmployee.status === 'Active' ? (
+                  <button onClick={() => handleRemove(selectedEmployee.employee_id)}>
+                    Remove
+                  </button>
+                ) : (
+                  <button onClick={() => handleReactivate(selectedEmployee.employee_id)}>
+                    Reactivate
+                  </button>
+                )}
               </div>
             </div>
 

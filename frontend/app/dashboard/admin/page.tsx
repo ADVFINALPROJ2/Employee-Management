@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Plus, CalendarCheck, FileEdit, AlertTriangle } from 'lucide-react';
-import { apiClient } from '@/lib/api';
+import { apiClient, getUser } from '@/lib/api';
 
 interface AdminDashboardData {
   totalEmployees: number;
@@ -15,8 +15,13 @@ interface AdminDashboardData {
 
 export default function AdminDashboard() {
   const [data, setData] = useState<AdminDashboardData | null>(null);
+  const user = getUser();
 
   useEffect(() => {
+    if (user?.role !== 'Admin') {
+      window.location.href = '/dashboard/employee';
+      return;
+    }
     apiClient.get('/dashboard/admin').then(setData).catch(() => {});
   }, []);
 

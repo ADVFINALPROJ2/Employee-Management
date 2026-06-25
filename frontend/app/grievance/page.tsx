@@ -41,17 +41,17 @@ export default function EmployeeGrievancePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-3xl mx-auto px-6 py-6">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Submit a Grievance</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+        <div className="px-6 py-6">
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Submit a Grievance</h1>
+          <p className="text-sm text-gray-500 mt-1">
             Your concerns are confidential. Choose anonymous if you prefer.
           </p>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-8">
+      <main className="p-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <form onSubmit={handleSubmit} className="p-8 space-y-6">
             {showSuccess && (
               <div className="flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-3 text-sm">
                 <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -86,7 +86,7 @@ export default function EmployeeGrievancePage() {
                 placeholder="Brief summary of your concern"
                 className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
-              <p className="mt-1 text-xs text-gray-400">{title.length}/150</p>
+              <p className="mt-1 text-sm text-gray-400">{title.length}/150</p>
             </div>
 
             <div>
