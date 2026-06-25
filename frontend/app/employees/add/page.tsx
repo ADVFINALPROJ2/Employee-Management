@@ -82,23 +82,20 @@ export default function AddEmployee() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 bg-opacity-40 flex items-center justify-center p-4">
-      <div className="w-full max-w-xl bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100">
-        
-        {/* Modal Header */}
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-100">
-          <h1 className="text-xl font-bold text-gray-800">Add Employee Form (Admin Page)</h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-3xl mx-auto px-6 py-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Add Employee</h1>
+          <p className="text-sm text-gray-500 mt-1">Fill in the details to create a new employee record.</p>
         </div>
-
         {errorMsg && (
-          <div className="mx-6 mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium">
-            ⚠️ {errorMsg}
+          <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm font-medium">
+            {errorMsg}
           </div>
         )}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <form onSubmit={handleSubmit} className="p-6 space-y-5">
 
-        {/* Modal Form Content */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          
           {/* Full Name */}
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1">Full Name</label>
@@ -269,25 +266,24 @@ export default function AddEmployee() {
             </div>
           </div>
 
-          {/* Form Action Controls Footer */}
-          <div className="pt-4 flex justify-end gap-3 items-center border-t border-gray-100 bg-gray-50 -mx-6 -mb-6 px-6 py-4">
+          <div className="flex items-center justify-end gap-3 border-t border-gray-100 px-6 py-4">
             <button
               type="button"
               onClick={() => router.push("/employees")}
-              className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="bg-[#60A5FA] hover:bg-blue-500 text-white font-semibold py-2 px-5 rounded-lg flex items-center gap-1.5 text-sm transition-colors shadow-sm disabled:opacity-50"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-5 rounded-lg text-sm transition-colors disabled:opacity-50"
             >
-              <span>{loading ? "Adding..." : "+ Add Employee"}</span>
+              {loading ? "Adding..." : "+ Add Employee"}
             </button>
           </div>
-
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

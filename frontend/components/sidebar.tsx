@@ -53,12 +53,7 @@ const sidebarLinks: LinkGroup[] = [
       { label: "Admin View", href: "/grievance/admin", icon: "⚙️", adminOnly: true },
     ],
   },
-  {
-    group: "Other",
-    items: [
-      { label: "Portfolio", href: "/portfolio", icon: "💼" },
-    ],
-  },
+
 ];
 
 const publicPaths = ["/login", "/forgot-password", "/reset-password"];

@@ -76,6 +76,7 @@ export default function AdminGrievancePage() {
     setUpdatingId(id);
     try {
       await grievanceApi.updateStatus(id, { status: newStatus });
+      toast({ title: 'Status updated', description: `Grievance marked as "${newStatus}"`, variant: 'success' });
       fetchGrievances();
     } catch (e: unknown) {
       toast({ title: 'Update failed', description: e instanceof Error ? e.message : 'Something went wrong', variant: 'error' });
