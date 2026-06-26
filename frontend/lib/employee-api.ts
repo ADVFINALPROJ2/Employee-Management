@@ -21,3 +21,4 @@ export const employeeApi = {
 
   remove: (id: string) => apiClient.delete(`/employee/${id}`),
 };
+
