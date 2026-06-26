@@ -12,6 +12,8 @@ export const employeeApi = {
 
   getOne: (id: string) => apiClient.get(`/employee/${id}`),
 
+  getDepartments: () => apiClient.get("/employee/departments"),
+
   create: (data: any) => apiClient.post("/employee/create", data),
 
   update: (id: string, data: any) =>

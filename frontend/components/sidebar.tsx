@@ -1,63 +1,83 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { getUser } from "@/lib/api";
 
-const sidebarLinks = [
+interface LinkItem {
+  label: string;
+  href: string;
+  icon: string;
+  adminOnly?: boolean;
+  employeeOnly?: boolean;
+}
+
+interface LinkGroup {
+  group: string;
+  items: LinkItem[];
+}
+
+const sidebarLinks: LinkGroup[] = [
   {
     group: "Main",
     items: [
-      { label: "Dashboard", href: "/dashboard/admin", icon: "📊" },
-      { label: "Employee Dashboard", href: "/dashboard/employee", icon: "👤" },
+      { label: "Dashboard", href: "/dashboard/admin", icon: "📊", adminOnly: true },
+      { label: "Employee Dashboard", href: "/dashboard/employee", icon: "👤", employeeOnly: true },
     ],
   },
   {
     group: "Employees",
     items: [
-      { label: "All Employees", href: "/employees", icon: "👥" },
-      { label: "Add Employee", href: "/employees/add", icon: "➕" },
-    ],
-  },
-  {
-    group: "Attendance",
-    items: [
-      { label: "My Attendance", href: "/attendance", icon: "⏱️" },
-      { label: "Admin View", href: "/attendance/admin", icon: "📋" },
+      { label: "All Employees", href: "/employees", icon: "👥", adminOnly: true },
+      { label: "Add Employee", href: "/employees/add", icon: "➕", adminOnly: true },
     ],
   },
   {
     group: "Leave",
     items: [
       { label: "Request Leave", href: "/leave/request", icon: "📝" },
-      { label: "Admin View", href: "/leave/admin", icon: "✅" },
+      { label: "Admin View", href: "/leave/admin", icon: "✅", adminOnly: true },
     ],
   },
   {
     group: "Grievance",
     items: [
       { label: "Submit", href: "/grievance", icon: "📢" },
-      { label: "Admin View", href: "/grievance/admin", icon: "⚙️" },
+      { label: "Admin View", href: "/grievance/admin", icon: "⚙️", adminOnly: true },
     ],
   },
-  {
-    group: "Other",
-    items: [
-      { label: "Portfolio", href: "/portfolio", icon: "💼" },
-    ],
-  },
+
 ];
 
 const publicPaths = ["/login", "/forgot-password", "/reset-password"];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const user = getUser();
+    setRole(user?.role || null);
+  }, [pathname]);
 
   if (publicPaths.includes(pathname)) return null;
+
+  const filteredGroups = sidebarLinks
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        (item) =>
+          (!item.adminOnly || role === "Admin") &&
+          (!item.employeeOnly || role !== "Admin")
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <aside className="w-60 bg-white border-r border-gray-200 flex-shrink-0 overflow-y-auto hidden md:block">
       <div className="py-4">
-        {sidebarLinks.map((group) => (
+        {filteredGroups.map((group) => (
           <div key={group.group} className="mb-4">
             <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
               {group.group}

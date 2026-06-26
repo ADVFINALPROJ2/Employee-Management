@@ -1,5 +1,8 @@
-import React from 'react';
+'use client';
+
+import { useEffect, useState } from 'react';
 import { User, Calendar, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { apiClient, getUser } from '@/lib/api';
 
 interface LeaveBalanceItem {
   leave_type: { name: string };
@@ -13,14 +16,32 @@ interface EmployeeDashboardData {
   leaveBalance: LeaveBalanceItem[];
 }
 
-export default function EmployeeDashboard({ data, employeeInfo }: { data: EmployeeDashboardData, employeeInfo?: { name: string, role: string, email: string } }) {
+export default function EmployeeDashboard() {
+  const [data, setData] = useState<EmployeeDashboardData | null>(null);
+  const [user, setUser] = useState(getUser());
+
+  useEffect(() => {
+    setUser(getUser());
+  }, []);
+
+  useEffect(() => {
+    const u = user ?? getUser();
+    if (u?.role === 'Admin') {
+      window.location.href = '/dashboard/admin';
+      return;
+    }
+    const employeeId = u?.id;
+    if (employeeId) {
+      apiClient.get(`/dashboard/employee?employeeId=${employeeId}`).then(setData).catch(() => {});
+    }
+  }, [user]);
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Employee Dashboard</h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
         
-        {/* Left Hand: Employee Info Profile Card */}
         <div className="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between min-h-[250px]">
           <div className="bg-blue-600 px-5 py-3 text-white font-medium flex items-center gap-2">
             <User className="w-5 h-5" />
@@ -28,12 +49,12 @@ export default function EmployeeDashboard({ data, employeeInfo }: { data: Employ
           </div>
           <div className="p-6 flex-grow flex items-center gap-4">
             <div className="h-16 w-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold text-xl border border-blue-100">
-              {employeeInfo?.name ? employeeInfo.name.charAt(0) : 'E'}
+              {user?.fullName ? user.fullName.charAt(0) : 'E'}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{employeeInfo?.name ?? 'Employee Name'}</h2>
-              <p className="text-sm text-gray-500 font-medium">{employeeInfo?.role ?? 'Department Team Member'}</p>
-              <p className="text-xs text-gray-400 mt-1">{employeeInfo?.email ?? 'employee@company.com'}</p>
+              <h2 className="text-xl font-bold text-gray-900">{user?.fullName ?? 'Employee Name'}</h2>
+              <p className="text-sm text-gray-500 font-medium">{user?.role ?? 'Department Team Member'}</p>
+              <p className="text-xs text-gray-400 mt-1">{user?.email ?? 'employee@company.com'}</p>
             </div>
           </div>
           <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 grid grid-cols-3 gap-2 text-center">
@@ -58,7 +79,6 @@ export default function EmployeeDashboard({ data, employeeInfo }: { data: Employ
           </div>
         </div>
 
-        {/* Right Hand: Leave Balance Component */}
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between min-h-[250px]">
           <div className="bg-emerald-600 px-5 py-3 text-white font-medium flex items-center justify-between">
             <div className="flex items-center gap-2">

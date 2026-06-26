@@ -87,16 +87,14 @@ export default function AddEmployee() {
         <div className="px-6 py-4 bg-gray-50 border-b border-gray-100">
           <h1 className="text-xl font-bold text-gray-900 tracking-tight">Add Employee Form (Admin Page)</h1>
         </div>
-
         {errorMsg && (
           <div className="mx-6 mt-4 p-3 bg-red-50 text-red-600 rounded-md text-sm font-medium">
             ⚠️ {errorMsg}
           </div>
         )}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <form onSubmit={handleSubmit} className="p-6 space-y-5">
 
-        {/* Modal Form Content */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          
           {/* Full Name */}
           <div>
             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Full Name</label>
@@ -267,8 +265,7 @@ export default function AddEmployee() {
             </div>
           </div>
 
-          {/* Form Action Controls Footer */}
-          <div className="pt-4 flex justify-end gap-3 items-center border-t border-gray-100 bg-gray-50 -mx-6 -mb-6 px-6 py-4">
+          <div className="flex items-center justify-end gap-3 border-t border-gray-100 px-6 py-4">
             <button
               type="button"
               onClick={() => router.push("/employees")}
@@ -281,11 +278,11 @@ export default function AddEmployee() {
               disabled={loading}
               className="bg-[#60A5FA] hover:bg-blue-500 text-white font-semibold py-2 px-5 rounded-sm flex items-center gap-1.5 text-sm transition-colors shadow-xs disabled:opacity-50"
             >
-              <span>{loading ? "Adding..." : "+ Add Employee"}</span>
+              {loading ? "Adding..." : "+ Add Employee"}
             </button>
           </div>
-
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

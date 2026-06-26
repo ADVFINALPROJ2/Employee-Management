@@ -4,13 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateLeaveRequestDto } from './dto/create-leave-request.dto';
+import { CreateLeaveDto } from './dto/create-leave.dto';
 
 @Injectable()
 export class LeaveService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createLeaveRequest(dto: CreateLeaveRequestDto) {
+  async createLeaveRequest(dto: CreateLeaveDto) {
     const employee = await this.prisma.employee.findUnique({
       where: { employee_id: dto.employeeId },
     });
@@ -35,7 +35,7 @@ export class LeaveService {
     const balance = await this.prisma.leaveBalance.findUnique({
       where: {
         employee_id_leave_type_id: {
-          employee_id: dto.employeeId!,
+          employee_id: dto.employeeId,
           leave_type_id: dto.leaveTypeId,
         },
       },
@@ -53,7 +53,7 @@ export class LeaveService {
 
     const leaveRequest = await this.prisma.leaveRequest.create({
       data: {
-        employee_id: dto.employeeId!,
+        employee_id: dto.employeeId,
         leave_type_id: dto.leaveTypeId,
         start_date: startDate,
         end_date: endDate,
@@ -83,24 +83,6 @@ export class LeaveService {
     };
   }
 
-  async getLeaveHistory(employeeId: string) {
-    const history = await this.prisma.leaveRequest.findMany({
-      where: { employee_id: employeeId },
-      include: {
-        leave_type: {
-          select: { name: true },
-        },
-      },
-      orderBy: { created_at: 'desc' },
-    });
-
-    if (!history.length) {
-      return { message: 'No leave requests found' };
-    }
-
-    return history;
-  }
-
   async getLeaveBalances(employeeId: string) {
     const balances = await this.prisma.leaveBalance.findMany({
       where: { employee_id: employeeId },
@@ -116,11 +98,65 @@ export class LeaveService {
     }
 
     return balances.map((b) => ({
+      leaveTypeId: b.leave_type_id,
       leaveType: b.leave_type.name,
       description: b.leave_type.description,
       total: b.total_days,
       used: b.used_days,
       remaining: b.remaining_days,
     }));
+  }
+
+  async findAllRequests() {
+    return this.prisma.leaveRequest.findMany({
+      include: {
+        employee: { select: { full_name: true, email: true } },
+        leave_type: { select: { name: true } },
+      },
+    });
+  }
+
+  async updateStatus(leaveId: string, status: 'Approved' | 'Rejected', adminId: string) {
+    const request = await this.prisma.leaveRequest.findUnique({
+      where: { leave_id: leaveId },
+    });
+
+    if (!request) {
+      throw new BadRequestException('The requested leave application could not be found.');
+    }
+
+    if (request.status !== 'Pending') {
+      throw new BadRequestException('This leave request has already been processed.');
+    }
+
+    if (status === 'Approved') {
+      const timeDiff = new Date(request.end_date).getTime() - new Date(request.start_date).getTime();
+      const requestedDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+
+      const balance = await this.prisma.leaveBalance.findFirst({
+        where: {
+          employee_id: request.employee_id,
+          leave_type_id: request.leave_type_id,
+        },
+      });
+
+      if (balance) {
+        await this.prisma.leaveBalance.update({
+          where: { balance_id: balance.balance_id },
+          data: {
+            used_days: balance.used_days + requestedDays,
+            remaining_days: balance.remaining_days - requestedDays,
+          },
+        });
+      }
+    }
+
+    return this.prisma.leaveRequest.update({
+      where: { leave_id: leaveId },
+      data: {
+        status,
+        approved_by: adminId,
+      },
+    });
   }
 }
