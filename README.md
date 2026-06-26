@@ -8,7 +8,6 @@ A modular monolith employee operations platform that manages authentication, emp
 
 - [Tech Stack](#tech-stack)
 - [Features](#features)
-- [Architecture](#architecture)
 - [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
 - [Getting Started / Installation & Local Development](#getting-started--installation--local-development)
@@ -112,40 +111,6 @@ A modular monolith employee operations platform that manages authentication, emp
 - Password reset tokens
 
 > Note: The SRS includes attendance tracking requirements, and the Prisma schema contains an `Attendance` entity. The current backend/frontend code does not yet expose a dedicated attendance controller or UI route.
-
----
-
-## Architecture
-
-```mermaid
-graph TB
-    subgraph Client["Frontend — Next.js 16"]
-        FE["App Router Pages\nfrontend/app/"]
-    end
-
-    subgraph Server["Backend — NestJS 11"]
-        RT["Controllers\nbackend/src/*/*.controller.ts"]
-        SV["Services\nbackend/src/*/*.service.ts"]
-        AU["Auth + Guards\nbackend/src/auth/"]
-        PR["Prisma Layer\nbackend/src/prisma/"]
-    end
-
-    subgraph Store["Data Layer"]
-        PG[("PostgreSQL 15")]
-    end
-
-    FE -->|"HTTP JSON / Bearer Token"| RT
-    RT --> SV
-    RT --> AU
-    SV --> PR
-    PR --> PG
-
-    style Client fill:#e3f2fd,stroke:#1565c0
-    style Server fill:#e8f5e9,stroke:#2e7d32
-    style Store fill:#fff3e0,stroke:#e65100
-```
-
-The Next.js frontend calls the NestJS API over HTTP. NestJS controllers delegate business logic to services, which use Prisma to persist and query PostgreSQL. Authentication is session-based at the database layer, with tokens stored in the `Session` table.
 
 ---
 
@@ -289,28 +254,21 @@ Services:
 
 ## Configuration
 
-### Environment Variables
-
-| Variable | Default / Example | Required | Description |
-|---|---|---:|---|
-| `NODE_ENV` | `development` | No | Controls backend/runtime behavior |
-| `PORT` | `3001` | No | Backend listening port |
-| `DATABASE_URL` | `postgresql://postgres:securepassword123@localhost:5434/ems_db?schema=public` | Yes | Prisma database connection string |
-| `JWT_SECRET` | `replace-with-a-long-random-secret` | Yes in production | JWT signing secret |
-| `JWT_EXPIRATION` | `1d` | No | Token lifetime for custom JWT sessions |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:3001` | No | Frontend API origin |
-| `DB_USER` | `postgres` | No | Docker Compose database username |
-| `DB_PASSWORD` | `securepassword123` | No | Docker Compose database password |
-| `DB_NAME` | `ems_db` | No | Docker Compose database name |
-| `DB_PORT_HOST` | `5434` | No | Host port for PostgreSQL |
-| `BACKEND_PORT_HOST` | `3001` | No | Host port for backend |
-| `BACKEND_PORT_CONTAINER` | `3001` | No | Backend container port |
-| `FRONTEND_PORT_HOST` | `3000` | No | Host port for frontend |
-| `FRONTEND_PORT_CONTAINER` | `3000` | No | Frontend container port |
-
 ### Seed Data
 
-The backend seed script creates initial reference data and prints a seeded admin credential during local setup.
+The backend seed script creates the initial lookup data and a default admin user for local development.
+
+Use it after setting up Prisma and the database:
+
+```bash
+cd backend
+npx prisma db push
+npm run prisma:seed
+```
+
+This is useful when you want a fresh development database with the default departments, roles, and admin account already in place. After seeding, copy the admin credentials printed in the terminal and use them to log in to the app.
+
+If you reset or recreate the database, run the seed script again so the sample data is restored.
 
 ---
 
