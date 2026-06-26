@@ -75,7 +75,7 @@ export default function Sidebar() {
     .filter((group) => group.items.length > 0);
 
   return (
-    <aside className="w-60 bg-white border-r border-gray-200 flex-shrink-0 overflow-y-auto hidden md:block">
+    <aside className="sticky top-0 self-start h-screen w-60 bg-white border-r border-gray-200 flex-shrink-0 overflow-y-auto hidden md:block">
       <div className="py-4">
         {filteredGroups.map((group) => (
           <div key={group.group} className="mb-4">

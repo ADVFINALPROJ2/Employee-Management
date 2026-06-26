@@ -57,7 +57,7 @@ services:
       dockerfile: Dockerfile
       target: ${NODE_ENV:-development}
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend:3001}
     container_name: ems_frontend_container
     restart: always
     ports:
@@ -65,9 +65,10 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${FRONTEND_PORT_CONTAINER:-3000}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend:3001}
     volumes:
       - ./frontend:/usr/src/app:Z
+      - /usr/src/app/node_modules
     depends_on:
       backend:
         condition: service_healthy
