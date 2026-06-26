@@ -1,4 +1,5 @@
-const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/api';
+const isServer = typeof window === 'undefined';
+const BASE_URL = (isServer ? 'http://backend:3001' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001')) + '/api';
 
 export class ApiError extends Error {
   status: number;
@@ -176,6 +177,12 @@ export const leaveApi = {
   getBalance: () => apiClient.get('/leave/balance'),
 
   getHistory: () => apiClient.get('/leave/history'),
+
+  getById: (id: string) => apiClient.get(`/leave/${id}`),
+
+  update: (id: string, data: Record<string, unknown>) => apiClient.patch(`/leave/${id}`, data),
+
+  remove: (id: string) => apiClient.delete(`/leave/${id}`),
 };
 
 // ─── Grievance ────────────────────────────────────────────────────────────────
