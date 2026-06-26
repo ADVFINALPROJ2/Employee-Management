@@ -34,15 +34,13 @@ services:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${BACKEND_PORT_CONTAINER:-3001}
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-securepassword123}@postgres_db:5432/${DB_NAME:-ems_db}?schema=public
-    volumes:
-      - ./backend:/usr/src/app
-      - /usr/src/app/node_modules
+    volumes: []
       # - /usr/src/app/dist
     depends_on:
       postgres_db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${BACKEND_PORT_CONTAINER:-3001}/api/health"]
+      test: ["CMD", "node", "-e", "const port = process.env.PORT || 3001; require('http').get(`http://localhost:$${port}/api/health`, (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -68,6 +66,7 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     volumes:
       - ./frontend:/usr/src/app:Z
+      - /usr/src/app/node_modules
     depends_on:
       backend:
         condition: service_healthy
