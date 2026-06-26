@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Patch,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -35,6 +36,26 @@ export class LeaveController {
   @Roles('Admin')
   async findAllRequests() {
     return this.leaveService.findAllRequests();
+  }
+
+  @Get('history')
+  async getMyHistory(@Request() req: any) {
+    return this.leaveService.getMyHistory(req.user.employee_id);
+  }
+
+  @Get(':id')
+  async getMyRequest(@Param('id') leaveId: string, @Request() req: any) {
+    return this.leaveService.getMyRequest(leaveId, req.user.employee_id);
+  }
+
+  @Patch(':id')
+  async updateMyRequest(@Param('id') leaveId: string, @Body() dto: any, @Request() req: any) {
+    return this.leaveService.updateMyRequest(leaveId, req.user.employee_id, dto);
+  }
+
+  @Delete(':id')
+  async deleteMyRequest(@Param('id') leaveId: string, @Request() req: any) {
+    return this.leaveService.deleteMyRequest(leaveId, req.user.employee_id);
   }
 
   @Patch('status/:id')
