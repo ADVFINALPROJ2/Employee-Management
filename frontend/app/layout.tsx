@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import QueryProvider from "@/components/providers/QueryProvider";
+import Navbar from "@/components/navbar";
+import Sidebar from "@/components/sidebar";
 
 export const metadata: Metadata = {
   title: "Employee Management System",
@@ -15,9 +17,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
-        {/* Wrap your app so that every page has access to the Query Cache */}
         <QueryProvider>
-          {children}
+          <Navbar />
+          <div className="flex flex-1">
+            <Sidebar />
+            <main className="flex-1 p-6 bg-gray-50">{children}</main>
+          </div>
         </QueryProvider>
       </body>
     </html>
