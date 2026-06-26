@@ -27,7 +27,7 @@ async function main() {
       create: dept,
     });
   }
-  console.log(`Seeded ${departments.length} departments`);
+
 
   const leaveTypes = [
     { name: 'Annual', description: 'Annual leave', is_paid: true },

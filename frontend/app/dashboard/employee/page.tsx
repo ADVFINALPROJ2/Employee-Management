@@ -18,18 +18,23 @@ interface EmployeeDashboardData {
 
 export default function EmployeeDashboard() {
   const [data, setData] = useState<EmployeeDashboardData | null>(null);
-  const user = getUser();
+  const [user, setUser] = useState(getUser());
 
   useEffect(() => {
-    if (user?.role === 'Admin') {
+    setUser(getUser());
+  }, []);
+
+  useEffect(() => {
+    const u = user ?? getUser();
+    if (u?.role === 'Admin') {
       window.location.href = '/dashboard/admin';
       return;
     }
-    const employeeId = user?.id;
+    const employeeId = u?.id;
     if (employeeId) {
       apiClient.get(`/dashboard/employee?employeeId=${employeeId}`).then(setData).catch(() => {});
     }
-  }, []);
+  }, [user]);
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen">

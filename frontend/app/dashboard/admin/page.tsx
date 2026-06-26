@@ -15,15 +15,20 @@ interface AdminDashboardData {
 
 export default function AdminDashboard() {
   const [data, setData] = useState<AdminDashboardData | null>(null);
-  const user = getUser();
+  const [user, setUser] = useState(getUser());
 
   useEffect(() => {
-    if (user?.role !== 'Admin') {
+    setUser(getUser());
+  }, []);
+
+  useEffect(() => {
+    const u = user ?? getUser();
+    if (u?.role !== 'Admin') {
       window.location.href = '/dashboard/employee';
       return;
     }
     apiClient.get('/dashboard/admin').then(setData).catch(() => {});
-  }, []);
+  }, [user]);
 
   const total = data?.totalEmployees ?? 0;
   const leaves = data?.pendingLeaves ?? 0;

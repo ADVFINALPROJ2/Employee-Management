@@ -28,4 +28,3 @@ backend/.env
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-AUTH_PHASES.md
