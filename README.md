@@ -386,23 +386,4 @@ The repository includes a `docker-compose.yml` stack for local or server-based d
 ```bash
 docker compose up --build -d
 ```
-
-### Production Notes
-
-- Set `NODE_ENV=production`
-- Set a strong `JWT_SECRET`
-- Use a production PostgreSQL instance
-- Build the frontend with `npm run build` and run it with `npm run start`
-- Build the backend with `npm run build` and start with `npm run start:prod`
-
 ---
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, branch strategy, Conventional Commits, PR flow, and code style rules.
-
----
-
-## License
-
-No repository license file is currently present. Add a `LICENSE` file before distributing this project as open source.
