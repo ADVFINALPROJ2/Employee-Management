@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from "next/navigation";
 import { employeeApi } from "@/lib/employee-api";
 
@@ -17,11 +17,6 @@ interface Employee {
     department_id: string;
     name: string;
   };
-  address?: {
-    country?: string;
-    city?: string;
-    state?: string;
-  };
 }
 
 export default function EmployeeDashboardClient({
@@ -31,31 +26,31 @@ export default function EmployeeDashboardClient({
 }) {
   const router = useRouter();
 
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
-    initialEmployees?.[0] ?? null
-  );
+  const [employees, setEmployees] = useState<Employee[]>(initialEmployees || []);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
 
+  // ✅ Fix: auto select first employee safely
+  useEffect(() => {
+    if (employees.length > 0 && !selectedEmployee) {
+      setSelectedEmployee(employees[0]);
+    }
+  }, [employees]);
+
   const filteredEmployees = useMemo(() => {
     return employees.filter((emp) => {
       const search = searchTerm.toLowerCase();
 
-      const matchesSearch =
-        emp.full_name?.toLowerCase().includes(search) ||
-        emp.email?.toLowerCase().includes(search) ||
-        emp.position?.toLowerCase().includes(search);
-
-      const matchesDept =
-        selectedDept ? emp.department?.name === selectedDept : true;
-
-      const matchesStatus =
-        selectedStatus ? emp.status === selectedStatus : true;
-
-      return matchesSearch && matchesDept && matchesStatus;
+      return (
+        (emp.full_name?.toLowerCase().includes(search) ||
+          emp.email?.toLowerCase().includes(search) ||
+          emp.position?.toLowerCase().includes(search)) &&
+        (selectedDept ? emp.department?.name === selectedDept : true) &&
+        (selectedStatus ? emp.status === selectedStatus : true)
+      );
     });
   }, [employees, searchTerm, selectedDept, selectedStatus]);
 
@@ -69,6 +64,7 @@ export default function EmployeeDashboardClient({
     );
   }, [employees]);
 
+  // ✅ FIXED REMOVE
   const handleRemove = async (id: string) => {
     const ok = confirm("Are you sure you want to delete this employee?");
     if (!ok) return;
@@ -76,11 +72,17 @@ export default function EmployeeDashboardClient({
     try {
       await employeeApi.remove(id);
 
-      setEmployees((prev) => prev.filter((e) => e.employee_id !== id));
+      setEmployees((prev) => {
+        const updated = prev.filter((e) => e.employee_id !== id);
 
-      setSelectedEmployee((prev) =>
-        prev?.employee_id === id ? null : prev
-      );
+        // ✅ Fix selected employee after delete
+        if (selectedEmployee?.employee_id === id) {
+          setSelectedEmployee(updated[0] || null);
+        }
+
+        return updated;
+      });
+
     } catch (err) {
       console.error("Delete failed:", err);
       alert("Failed to delete employee");
@@ -93,7 +95,7 @@ export default function EmployeeDashboardClient({
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 items-start">
-      
+
       {/* LEFT PANEL */}
       <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
 
@@ -144,7 +146,7 @@ export default function EmployeeDashboardClient({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b text-left text-gray-500">
-              <th className="py-2">ID</th>
+              <th className="py-2">#</th>
               <th>Name</th>
               <th>Department</th>
               <th>Status</th>
@@ -153,59 +155,73 @@ export default function EmployeeDashboardClient({
           </thead>
 
           <tbody>
-            {filteredEmployees.map((emp, index) => (
-              <tr key={emp.employee_id} className="border-b hover:bg-gray-50">
-
-                <td className="py-2">
-                  {String(index + 1).padStart(2, '0')}
+            {filteredEmployees.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="text-center py-6 text-gray-400">
+                  No employees found
                 </td>
-
-                <td>
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center font-bold">
-                      {emp.full_name?.charAt(0)}
-                    </div>
-                    {emp.full_name}
-                  </div>
-                </td>
-
-                <td>{emp.department?.name || "Unassigned"}</td>
-
-                <td>
-                  <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                    emp.status === "Active"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-200 text-gray-700"
-                  }`}>
-                    {emp.status}
-                  </span>
-                </td>
-
-                <td className="text-right space-x-2">
-                  <button
-                    onClick={() => handleEdit(emp.employee_id)}
-                    className="text-blue-600 hover:underline text-sm"
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() => handleRemove(emp.employee_id)}
-                    className="text-red-600 hover:underline text-sm"
-                  >
-                    Remove
-                  </button>
-
-                  <button
-                    onClick={() => setSelectedEmployee(emp)}
-                    className="text-gray-600 hover:underline text-sm"
-                  >
-                    View
-                  </button>
-                </td>
-
               </tr>
-            ))}
+            ) : (
+              filteredEmployees.map((emp, index) => (
+                <tr
+                  key={emp.employee_id}
+                  className={`border-b hover:bg-gray-50 ${
+                    selectedEmployee?.employee_id === emp.employee_id
+                      ? "bg-blue-50"
+                      : ""
+                  }`}
+                >
+                  <td className="py-2">
+                    {String(index + 1).padStart(2, '0')}
+                  </td>
+
+                  <td>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center font-bold">
+                        {emp.full_name?.charAt(0) || "?"}
+                      </div>
+                      {emp.full_name}
+                    </div>
+                  </td>
+
+                  <td>{emp.department?.name || "Unassigned"}</td>
+
+                  <td>
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                      emp.status === "Active"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-200 text-gray-700"
+                    }`}>
+                      {emp.status}
+                    </span>
+                  </td>
+
+                  <td className="text-right space-x-2">
+                    <button
+                      onClick={() => handleEdit(emp.employee_id)}
+                      className="text-blue-600 hover:underline text-sm"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => handleRemove(emp.employee_id)}
+                      className="text-red-600 hover:underline text-sm"
+                    >
+                      Remove
+                    </button>
+
+                    <button
+                      onClick={() => setSelectedEmployee(emp)}
+                      className="text-gray-600 hover:underline text-sm"
+                    >
+                      View
+                    </button>
+                  </td>
+
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -222,7 +238,6 @@ export default function EmployeeDashboardClient({
               </h2>
 
               <div className="flex flex-col gap-2">
-
                 <button
                   onClick={() => handleEdit(selectedEmployee.employee_id)}
                   className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 rounded"
@@ -236,14 +251,13 @@ export default function EmployeeDashboardClient({
                 >
                   Remove
                 </button>
-
               </div>
             </div>
 
             <div className="mt-4 space-y-1 text-sm">
               <p><b>Name:</b> {selectedEmployee.full_name}</p>
               <p><b>Email:</b> {selectedEmployee.email}</p>
-              <p><b>Department:</b> {selectedEmployee.department?.name}</p>
+              <p><b>Department:</b> {selectedEmployee.department?.name || "N/A"}</p>
               <p><b>Status:</b> {selectedEmployee.status}</p>
             </div>
           </>
