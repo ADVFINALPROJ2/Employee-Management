@@ -3,6 +3,10 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
+  if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required in production');
+  }
+
   const app = await NestFactory.create(AppModule);
 
   // 1. Global API Prefix (All endpoints will start with /api)
@@ -24,7 +28,7 @@ async function bootstrap() {
 
   // Dynamic Port Binding: Checks process.env.PORT provided by Docker Compose
   const port = process.env.PORT || 5000;
-  await app.listen(port);
+  await app.listen(port,'0.0.0.0');
   
   console.log(`🚀 Backend application is running on: http://localhost:${port}/api`);
 }

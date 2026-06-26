@@ -12,6 +12,8 @@ COPY . .
 RUN npx prisma generate
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN apk add --no-cache wget
+EXPOSE 3001
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["npm", "run", "start:dev"]
 

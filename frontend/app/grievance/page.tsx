@@ -1,46 +1,38 @@
 'use client';
 
 import { useState } from 'react';
+import { grievanceApi } from '@/lib/api';
+import { toast } from '@/lib/toast';
 
 const CATEGORIES = ['Workplace issue', 'Harassment', 'Salary', 'Other'] as const;
 
 export default function EmployeeGrievancePage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [category, setCategory] = useState<string>(CATEGORIES[0]);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     setShowSuccess(false);
     try {
-      const res = await fetch(`${API}/api/grievance`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer mock-token-Employee`,
-        },
-        body: JSON.stringify({
-          title,
-          description,
-          category,
-          is_anonymous: isAnonymous,
-          employee_id: 'mock-user-id',
-        }),
+      await grievanceApi.create({
+        title,
+        description,
+        category,
+        is_anonymous: isAnonymous,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setTitle('');
       setDescription('');
       setCategory(CATEGORIES[0]);
       setIsAnonymous(false);
       setShowSuccess(true);
+      toast({ title: 'Grievance submitted', description: 'Your grievance has been submitted successfully.', variant: 'success' });
     } catch (e: unknown) {
-      alert(e instanceof Error ? e.message : 'Submission failed');
+      toast({ title: 'Submission failed', description: e instanceof Error ? e.message : 'Something went wrong', variant: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -49,17 +41,17 @@ export default function EmployeeGrievancePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-3xl mx-auto px-6 py-6">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Submit a Grievance</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+        <div className="px-6 py-6">
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Submit a Grievance</h1>
+          <p className="text-sm text-gray-500 mt-1">
             Your concerns are confidential. Choose anonymous if you prefer.
           </p>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-8">
+      <main className="p-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <form onSubmit={handleSubmit} className="p-8 space-y-6">
             {showSuccess && (
               <div className="flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 rounded-lg px-4 py-3 text-sm">
                 <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -94,7 +86,7 @@ export default function EmployeeGrievancePage() {
                 placeholder="Brief summary of your concern"
                 className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
-              <p className="mt-1 text-xs text-gray-400">{title.length}/150</p>
+              <p className="mt-1 text-sm text-gray-400">{title.length}/150</p>
             </div>
 
             <div>
