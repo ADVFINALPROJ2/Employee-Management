@@ -34,7 +34,6 @@ A modular monolith employee operations platform that manages authentication, emp
 | Validation | class-validator / class-transformer | — |
 | Auth | Custom JWT sessions with HMAC-SHA256 | — |
 | Password Hashing | Node.js crypto.scrypt | — |
-| Testing | Jest / ts-jest / Supertest | — |
 | Linting | ESLint / TypeScript ESLint / Prettier | — |
 
 ### Frontend
@@ -46,7 +45,6 @@ A modular monolith employee operations platform that manages authentication, emp
 | Language | TypeScript | 5 |
 | Styling | Tailwind CSS | 4 |
 | Data Fetching | TanStack React Query | 5.101.1 |
-| UI Primitives | Radix UI | — |
 | Icons | lucide-react | 1.21.0 |
 | Linting | ESLint / eslint-config-next | 9 / 16.2.7 |
 
