@@ -5,8 +5,8 @@ export interface EmployeeFilterQuery {
   department_id?: string;
   status?: string;
 }
-
 export const employeeApi = {
+  getDepartments: () => apiClient.get('/employee/departments'),
   getAll: (query?: string) =>
     apiClient.get(`/employee${query ? `?${query}` : ""}`),
 
@@ -21,4 +21,3 @@ export const employeeApi = {
 
   remove: (id: string) => apiClient.delete(`/employee/${id}`),
 };
-
