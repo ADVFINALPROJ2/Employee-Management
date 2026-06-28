@@ -15,7 +15,7 @@ interface LeaveType {
   name: string;
 }
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') + '/api';
+const API_BASE = 'https://employee-management-6gpn.onrender.com/api';
 
 export default function ApplyLeavePage() {
   const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
