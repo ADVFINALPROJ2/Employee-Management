@@ -2,9 +2,11 @@ import { Injectable, BadRequestException, NotFoundException,InternalServerErrorE
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
+import { randomBytes, scrypt } from 'crypto';
+import { promisify } from 'util';
 import { Prisma } from '@prisma/client';
-import { stat } from 'fs';
+
+const scryptAsync = promisify(scrypt);
 
 
 @Injectable()
@@ -19,7 +21,9 @@ export class EmployeeService {
   }
 
   async create(createEmployeeDto: CreateEmployeeDto) {
-    const hashedPassword = await bcrypt.hash(createEmployeeDto.password, 10);
+    const salt = randomBytes(16).toString('hex');
+    const derivedKey = (await scryptAsync(createEmployeeDto.password, salt, 64)) as Buffer;
+    const hashedPassword = `scrypt:${salt}:${derivedKey.toString('hex')}`;
     const emp = await this.prisma.employee.findUnique({
       where:{email:createEmployeeDto.email}
     })
@@ -129,7 +133,9 @@ export class EmployeeService {
     }
 
     if (dto.password) {
-      dto.password = await bcrypt.hash(dto.password, 10);
+      const salt = randomBytes(16).toString('hex');
+      const derivedKey = (await scryptAsync(dto.password, salt, 64)) as Buffer;
+      dto.password = `scrypt:${salt}:${derivedKey.toString('hex')}`;
     }
 
     const { address, department_id, ...rest } = dto;
