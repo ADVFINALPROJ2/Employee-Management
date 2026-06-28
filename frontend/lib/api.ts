@@ -1,5 +1,5 @@
 const isServer = typeof window === 'undefined';
-const BASE_URL = (isServer ? 'http://backend:3001' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001')) + '/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://employee-management-6gpn.onrender.com/api';
 
 export class ApiError extends Error {
   status: number;
