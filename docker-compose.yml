@@ -67,7 +67,8 @@ services:
       PORT: ${FRONTEND_PORT_CONTAINER:-3000}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     volumes:
-      - ./frontend:/usr/src/app:Z
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
       backend:
         condition: service_healthy
