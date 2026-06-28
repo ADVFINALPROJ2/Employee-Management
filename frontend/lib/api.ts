@@ -1,5 +1,6 @@
 const isServer = typeof window === 'undefined';
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://employee-management-6gpn.onrender.com/api';
+
+const BASE_URL = 'https://employee-management-6gpn.onrender.com/api';
 
 export class ApiError extends Error {
   status: number;
