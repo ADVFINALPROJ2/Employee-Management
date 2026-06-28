@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Put,
   Patch,
   Delete,
   Body,
@@ -46,6 +47,34 @@ export class LeaveController {
   @Get('history')
   async getMyHistory(@Request() req: any) {
     return this.leaveService.getMyHistory(req.user.employee_id);
+  }
+
+  @Get('admin/balances')
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
+  async getAllBalances() {
+    return this.leaveService.getAllBalances();
+  }
+
+  @Post('admin/balances')
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
+  async createBalance(@Body() data: { leave_type_id: string; total_days: number }) {
+    return this.leaveService.createBalance(data);
+  }
+
+  @Put('admin/balances/:id')
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
+  async updateBalance(@Param('id') id: string, @Body() data: { total_days?: number; used_days?: number }) {
+    return this.leaveService.updateBalance(id, data);
+  }
+
+  @Delete('admin/balances/:id')
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
+  async deleteBalance(@Param('id') id: string) {
+    return this.leaveService.deleteBalance(id);
   }
 
   @Get(':id')

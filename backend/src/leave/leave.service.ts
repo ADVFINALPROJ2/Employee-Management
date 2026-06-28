@@ -207,6 +207,73 @@ export class LeaveService {
     ]);
   }
 
+  async getAllBalances() {
+    return this.prisma.leaveBalance.findMany({
+      include: {
+        employee: { select: { full_name: true, email: true } },
+        leave_type: { select: { name: true } },
+      },
+      orderBy: [{ employee: { full_name: 'asc' } }, { leave_type: { name: 'asc' } }],
+    });
+  }
+
+  async createBalance(data: { leave_type_id: string; total_days: number }) {
+    const employees = await this.prisma.employee.findMany({ where: { status: 'Active' } });
+    const created = [];
+
+    for (const emp of employees) {
+      const existing = await this.prisma.leaveBalance.findUnique({
+        where: {
+          employee_id_leave_type_id: {
+            employee_id: emp.employee_id,
+            leave_type_id: data.leave_type_id,
+          },
+        },
+      });
+      if (!existing) {
+        const balance = await this.prisma.leaveBalance.create({
+          data: {
+            employee_id: emp.employee_id,
+            leave_type_id: data.leave_type_id,
+            total_days: data.total_days,
+            used_days: 0,
+            remaining_days: data.total_days,
+          },
+        });
+        created.push(balance);
+      }
+    }
+
+    return { message: `Created ${created.length} balances`, count: created.length };
+  }
+
+  async updateBalance(balanceId: string, data: { total_days?: number; used_days?: number }) {
+    const balance = await this.prisma.leaveBalance.findUnique({ where: { balance_id: balanceId } });
+    if (!balance) throw new NotFoundException('Balance not found');
+
+    const updateData: any = {};
+    if (data.total_days !== undefined) updateData.total_days = data.total_days;
+    if (data.used_days !== undefined) updateData.used_days = data.used_days;
+    if (data.total_days !== undefined || data.used_days !== undefined) {
+      updateData.remaining_days = (data.total_days ?? balance.total_days) - (data.used_days ?? balance.used_days);
+    }
+
+    return this.prisma.leaveBalance.update({
+      where: { balance_id: balanceId },
+      data: updateData,
+      include: {
+        employee: { select: { full_name: true, email: true } },
+        leave_type: { select: { name: true } },
+      },
+    });
+  }
+
+  async deleteBalance(balanceId: string) {
+    const balance = await this.prisma.leaveBalance.findUnique({ where: { balance_id: balanceId } });
+    if (!balance) throw new NotFoundException('Balance not found');
+    return this.prisma.leaveBalance.delete({ where: { balance_id: balanceId } });
+  }
+
   async updateStatus(leaveId: string, status: 'Approved' | 'Rejected', adminId: string) {
     const request = await this.prisma.leaveRequest.findUnique({
       where: { leave_id: leaveId },
