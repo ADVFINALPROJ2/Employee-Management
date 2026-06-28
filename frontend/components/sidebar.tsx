@@ -36,10 +36,9 @@ const sidebarLinks: LinkGroup[] = [
   {
     group: "Leave",
     items: [
-      { label: "Apply for Leave", href: "/leave/request/apply", icon: "📝" },
-      { label: "Leave Status", href: "/leave/request/status", icon: "⏳" },
-      { label: "Leave History", href: "/leave/request/history", icon: "📜" },
-      { label: "Balances", href: "/leave/request/balances", icon: "💰" },
+      { label: "Apply for Leave", href: "/leave/request/apply", icon: "📝", employeeOnly: true },
+      { label: "Leave History", href: "/leave/request/history", icon: "📜", employeeOnly: true },
+      { label: "Balances", href: "/leave/request/balances", icon: "💰", adminOnly: true },
       { label: "Admin View", href: "/leave/admin", icon: "✅", adminOnly: true },
     ],
   },
