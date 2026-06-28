@@ -86,8 +86,13 @@ export default function Sidebar() {
               {group.group}
             </p>
             {group.items.map((link) => {
-              const isActive =
-                pathname === link.href || pathname.startsWith(link.href + "/");
+              const isActive = (() => {
+                if (pathname === link.href) return true;
+                if (!pathname.startsWith(link.href + "/")) return false;
+                return !group.items.some(
+                  other => other.href !== link.href && (pathname === other.href || pathname.startsWith(other.href + "/"))
+                );
+              })();
               return (
                 <Link
                   key={link.href}

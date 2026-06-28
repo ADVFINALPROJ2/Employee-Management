@@ -30,6 +30,7 @@ export default function EditEmployeePage() {
     full_name: '',
     email: '',
     phone: '',
+    password: '',
     position: '',
     status: 'Active' as 'Active' | 'Inactive',
   });
@@ -78,8 +79,11 @@ export default function EditEmployeePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const payload: any = { ...form };
+    if (!payload.password) delete payload.password;
+
     try {
-      await employeeApi.update(id, form);
+      await employeeApi.update(id, payload);
       router.push('/employees');
     } catch (err) {
       console.error("Update failed:", err);
@@ -148,6 +152,22 @@ export default function EditEmployeePage() {
                 value={form.phone}
                 onChange={handleChange}
                 placeholder="+251-911-111-111"
+                className="w-full pl-10 pr-3 py-2 bg-gray-50 text-gray-800 placeholder-gray-400 border border-gray-200 rounded-md text-sm focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-400 transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Password</label>
+            <div className="relative flex items-center">
+              <span className="absolute left-3 text-gray-400">🔑</span>
+              <input
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Leave blank to keep current"
                 className="w-full pl-10 pr-3 py-2 bg-gray-50 text-gray-800 placeholder-gray-400 border border-gray-200 rounded-md text-sm focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-400 transition-colors"
               />
             </div>
