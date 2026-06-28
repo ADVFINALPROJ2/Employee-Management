@@ -31,37 +31,47 @@ export class EmployeeService {
       throw new BadRequestException('Email already exists')
     }
 
-    return this.prisma.employee.create({
-      data: {
-        full_name: createEmployeeDto.full_name,
-        email: createEmployeeDto.email,
-        password: hashedPassword, 
-        phone: createEmployeeDto.phone,
-        role: createEmployeeDto.role || 'Employee',
-        status: 'Active',
-        hire_date: createEmployeeDto.hire_date? new Date(createEmployeeDto.hire_date): new Date(),
-        
-        position: createEmployeeDto.position,
-        department: createEmployeeDto.department_id
-          ? {
-            connect: { department_id: createEmployeeDto.department_id },
-          }
-          : undefined,
+    const leaveTypes = await this.prisma.leaveType.findMany();
 
-        address:createEmployeeDto.address?{
-          create:{
-            country: createEmployeeDto.address.country,
-            city: createEmployeeDto.address.city,
-            state: createEmployeeDto.address.state,
+    return this.prisma.$transaction(async (tx) => {
+      const employee = await tx.employee.create({
+        data: {
+          full_name: createEmployeeDto.full_name,
+          email: createEmployeeDto.email,
+          password: hashedPassword,
+          phone: createEmployeeDto.phone,
+          role: createEmployeeDto.role || 'Employee',
+          status: 'Active',
+          hire_date: createEmployeeDto.hire_date? new Date(createEmployeeDto.hire_date): new Date(),
+          position: createEmployeeDto.position,
+          department: createEmployeeDto.department_id
+            ? { connect: { department_id: createEmployeeDto.department_id } }
+            : undefined,
+          address: createEmployeeDto.address ? {
+            create: {
+              country: createEmployeeDto.address.country,
+              city: createEmployeeDto.address.city,
+              state: createEmployeeDto.address.state,
+            },
+          } : undefined,
+        },
+        include: { address: true, department: true },
+      });
+
+      for (const lt of leaveTypes) {
+        await tx.leaveBalance.create({
+          data: {
+            employee_id: employee.employee_id,
+            leave_type_id: lt.leave_type_id,
+            total_days: lt.is_paid ? 20 : 10,
+            used_days: 0,
+            remaining_days: lt.is_paid ? 20 : 10,
           },
-        }
-        : undefined
-      },
-      include:{
-        address:true,
-        department:true,
+        });
       }
-    }) ;
+
+      return employee;
+    });
   }
 
   async findAll(query: { department_id?: string; role?: string; status?: string; search?: string; employee_id?: string }) {

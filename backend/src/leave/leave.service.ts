@@ -108,6 +108,10 @@ export class LeaveService {
     }));
   }
 
+  async getLeaveTypes() {
+    return this.prisma.leaveType.findMany();
+  }
+
   async findAllRequests() {
     return this.prisma.leaveRequest.findMany({
       include: {

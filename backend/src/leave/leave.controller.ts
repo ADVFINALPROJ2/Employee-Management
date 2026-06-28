@@ -26,6 +26,11 @@ export class LeaveController {
     return this.leaveService.createLeaveRequest(dto);
   }
 
+  @Get('types')
+  async getLeaveTypes() {
+    return this.leaveService.getLeaveTypes();
+  }
+
   @Get('balance')
   async getBalances(@Request() req: any) {
     return this.leaveService.getLeaveBalances(req.user.employee_id);

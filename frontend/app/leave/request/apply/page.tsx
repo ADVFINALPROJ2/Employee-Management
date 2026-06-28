@@ -32,8 +32,24 @@ export default function ApplyLeavePage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
+    fetchLeaveTypes();
     fetchBalances();
   }, []);
+
+  const fetchLeaveTypes = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/leave/types`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLeaveTypes(data);
+      }
+    } catch {
+      console.log('could not load leave types');
+    }
+  };
 
   const fetchBalances = async () => {
     try {
@@ -44,11 +60,6 @@ export default function ApplyLeavePage() {
       if (res.ok) {
         const data = await res.json();
         setBalances(data);
-        const types = data.map((b: any, i: number) => ({
-          leave_type_id: b.leaveTypeId || String(i),
-          name: b.leaveType,
-        }));
-        setLeaveTypes(types);
       }
     } catch {
       console.log('could not load balances');
