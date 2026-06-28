@@ -208,18 +208,35 @@ export class LeaveService {
   }
 
   async getAllBalances() {
-    return this.prisma.leaveBalance.findMany({
-      include: {
-        employee: { select: { full_name: true, email: true } },
-        leave_type: { select: { name: true } },
-      },
-      orderBy: [{ employee: { full_name: 'asc' } }, { leave_type: { name: 'asc' } }],
-    });
+    const leaveTypes = await this.prisma.leaveType.findMany();
+    const result = [];
+
+    for (const lt of leaveTypes) {
+      const balances = await this.prisma.leaveBalance.findMany({
+        where: { leave_type_id: lt.leave_type_id },
+      });
+
+      const totalEmployees = balances.length;
+      const totalUsed = balances.reduce((sum, b) => sum + b.used_days, 0);
+      const totalRemaining = balances.reduce((sum, b) => sum + b.remaining_days, 0);
+      const defaultTotal = balances.length > 0 ? balances[0].total_days : 20;
+
+      result.push({
+        leave_type_id: lt.leave_type_id,
+        leave_type: lt.name,
+        total_days: defaultTotal,
+        total_used: totalUsed,
+        total_remaining: totalRemaining,
+        employee_count: totalEmployees,
+      });
+    }
+
+    return result;
   }
 
   async createBalance(data: { leave_type_id: string; total_days: number }) {
     const employees = await this.prisma.employee.findMany({ where: { status: 'Active' } });
-    const created = [];
+    let created = 0;
 
     for (const emp of employees) {
       const existing = await this.prisma.leaveBalance.findUnique({
@@ -231,7 +248,7 @@ export class LeaveService {
         },
       });
       if (!existing) {
-        const balance = await this.prisma.leaveBalance.create({
+        await this.prisma.leaveBalance.create({
           data: {
             employee_id: emp.employee_id,
             leave_type_id: data.leave_type_id,
@@ -240,38 +257,33 @@ export class LeaveService {
             remaining_days: data.total_days,
           },
         });
-        created.push(balance);
+        created++;
       }
     }
 
-    return { message: `Created ${created.length} balances`, count: created.length };
+    return { message: `Created ${created} balances`, count: created };
   }
 
-  async updateBalance(balanceId: string, data: { total_days?: number; used_days?: number }) {
-    const balance = await this.prisma.leaveBalance.findUnique({ where: { balance_id: balanceId } });
-    if (!balance) throw new NotFoundException('Balance not found');
+  async updateBalanceByType(leaveTypeId: string, data: { total_days?: number }) {
+    if (data.total_days === undefined) throw new BadRequestException('total_days is required');
 
-    const updateData: any = {};
-    if (data.total_days !== undefined) updateData.total_days = data.total_days;
-    if (data.used_days !== undefined) updateData.used_days = data.used_days;
-    if (data.total_days !== undefined || data.used_days !== undefined) {
-      updateData.remaining_days = (data.total_days ?? balance.total_days) - (data.used_days ?? balance.used_days);
-    }
-
-    return this.prisma.leaveBalance.update({
-      where: { balance_id: balanceId },
-      data: updateData,
-      include: {
-        employee: { select: { full_name: true, email: true } },
-        leave_type: { select: { name: true } },
+    const updated = await this.prisma.leaveBalance.updateMany({
+      where: { leave_type_id: leaveTypeId },
+      data: {
+        total_days: data.total_days,
+        remaining_days: data.total_days,
       },
     });
+
+    return { message: `Updated ${updated.count} balances` };
   }
 
-  async deleteBalance(balanceId: string) {
-    const balance = await this.prisma.leaveBalance.findUnique({ where: { balance_id: balanceId } });
-    if (!balance) throw new NotFoundException('Balance not found');
-    return this.prisma.leaveBalance.delete({ where: { balance_id: balanceId } });
+  async deleteBalanceByType(leaveTypeId: string) {
+    const deleted = await this.prisma.leaveBalance.deleteMany({
+      where: { leave_type_id: leaveTypeId },
+    });
+
+    return { message: `Deleted ${deleted.count} balances` };
   }
 
   async updateStatus(leaveId: string, status: 'Approved' | 'Rejected', adminId: string) {

@@ -63,18 +63,18 @@ export class LeaveController {
     return this.leaveService.createBalance(data);
   }
 
-  @Put('admin/balances/:id')
+  @Put('admin/balances/:leaveTypeId')
   @UseGuards(RolesGuard)
   @Roles('Admin')
-  async updateBalance(@Param('id') id: string, @Body() data: { total_days?: number; used_days?: number }) {
-    return this.leaveService.updateBalance(id, data);
+  async updateBalance(@Param('leaveTypeId') leaveTypeId: string, @Body() data: { total_days?: number }) {
+    return this.leaveService.updateBalanceByType(leaveTypeId, data);
   }
 
-  @Delete('admin/balances/:id')
+  @Delete('admin/balances/:leaveTypeId')
   @UseGuards(RolesGuard)
   @Roles('Admin')
-  async deleteBalance(@Param('id') id: string) {
-    return this.leaveService.deleteBalance(id);
+  async deleteBalance(@Param('leaveTypeId') leaveTypeId: string) {
+    return this.leaveService.deleteBalanceByType(leaveTypeId);
   }
 
   @Get(':id')
