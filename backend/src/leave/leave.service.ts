@@ -85,7 +85,7 @@ export class LeaveService {
   }
 
   async getLeaveBalances(employeeId: string) {
-    const balances = await this.prisma.leaveBalance.findMany({
+    let balances = await this.prisma.leaveBalance.findMany({
       where: { employee_id: employeeId },
       include: {
         leave_type: {
@@ -95,7 +95,26 @@ export class LeaveService {
     });
 
     if (!balances.length) {
-      throw new NotFoundException('No leave balances found');
+      const leaveTypes = await this.prisma.leaveType.findMany();
+      for (const lt of leaveTypes) {
+        await this.prisma.leaveBalance.create({
+          data: {
+            employee_id: employeeId,
+            leave_type_id: lt.leave_type_id,
+            total_days: lt.is_paid ? 20 : 10,
+            used_days: 0,
+            remaining_days: lt.is_paid ? 20 : 10,
+          },
+        });
+      }
+      balances = await this.prisma.leaveBalance.findMany({
+        where: { employee_id: employeeId },
+        include: {
+          leave_type: {
+            select: { name: true, description: true },
+          },
+        },
+      });
     }
 
     return balances.map((b) => ({
