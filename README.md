@@ -4,8 +4,22 @@ A modular monolith employee operations platform that manages authentication, emp
 
 ---
 
+## Live Demo
+
+- **Frontend:** [https://employee-management-pro.vercel.app](https://employee-management-pro.vercel.app)
+- **Backend API:** [https://employee-management-6gpn.onrender.com/api](https://employee-management-6gpn.onrender.com/api)
+
+### Demo Credentials
+
+| Role    | Email             | Password   |
+|---------|-------------------|------------|
+| Admin   | admin@company.com | Admin@123  |
+
+---
+
 ## Table of Contents
 
+- [Live Demo](#live-demo)
 - [Tech Stack](#tech-stack)
 - [Features](#features)
 - [Project Structure](#project-structure)
