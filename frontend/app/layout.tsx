@@ -4,6 +4,7 @@ import QueryProvider from "@/components/providers/QueryProvider";
 import Navbar from "@/components/navbar";
 import Sidebar from "@/components/sidebar";
 import { Toaster } from "@/components/ui/toaster";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "Employee Management System",
@@ -26,6 +27,7 @@ export default function RootLayout({
           </div>
           <Toaster />
         </QueryProvider>
+        <Analytics />
       </body>
     </html>
   );
