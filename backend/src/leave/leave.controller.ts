@@ -63,6 +63,7 @@ export class LeaveController {
     return this.leaveService.createBalance(data);
   }
 
+<<<<<<< HEAD
   @Put('admin/balances/:id')
   @UseGuards(RolesGuard)
   @Roles('Admin')
@@ -75,6 +76,20 @@ export class LeaveController {
   @Roles('Admin')
   async deleteBalance(@Param('id') id: string) {
     return this.leaveService.deleteBalance(id);
+=======
+  @Put('admin/balances/:leaveTypeId')
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
+  async updateBalance(@Param('leaveTypeId') leaveTypeId: string, @Body() data: { total_days?: number }) {
+    return this.leaveService.updateBalanceByType(leaveTypeId, data);
+  }
+
+  @Delete('admin/balances/:leaveTypeId')
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
+  async deleteBalance(@Param('leaveTypeId') leaveTypeId: string) {
+    return this.leaveService.deleteBalanceByType(leaveTypeId);
+>>>>>>> origin/leave
   }
 
   @Get(':id')
