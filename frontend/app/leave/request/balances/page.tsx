@@ -1,4 +1,5 @@
 'use client';
+// Displays the employee's leave request history with status indicators
 
 import React, { useEffect, useState } from 'react';
 import { Wallet, Trash2, Edit3, Plus, X, Check } from 'lucide-react';
