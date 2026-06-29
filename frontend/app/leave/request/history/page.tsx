@@ -1,4 +1,5 @@
 'use client';
+// Admin view for managing leave balance configurations by leave type
 
 import React, { useEffect, useState } from 'react';
 import { History, Clock, CheckCircle2, XCircle } from 'lucide-react';
