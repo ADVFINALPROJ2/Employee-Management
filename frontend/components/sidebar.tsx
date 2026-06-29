@@ -8,7 +8,7 @@ import { getUser } from "@/lib/api";
 interface LinkItem {
   label: string;
   href: string;
-  icon: string;
+  // icon removed
   adminOnly?: boolean;
   employeeOnly?: boolean;
 }
@@ -22,34 +22,33 @@ const sidebarLinks: LinkGroup[] = [
   {
     group: "Main",
     items: [
-      { label: "Dashboard", href: "/dashboard/admin", icon: "📊", adminOnly: true },
-      { label: "Employee Dashboard", href: "/dashboard/employee", icon: "👤", employeeOnly: true },
+      { label: "Dashboard", href: "/dashboard/admin", adminOnly: true },
+      { label: "Employee Dashboard", href: "/dashboard/employee", employeeOnly: true },
     ],
   },
   {
     group: "Employees",
     items: [
-      { label: "All Employees", href: "/employees", icon: "👥", adminOnly: true },
-      { label: "Add Employee", href: "/employees/add", icon: "➕", adminOnly: true },
+      { label: "All Employees", href: "/employees", adminOnly: true },
+      { label: "Add Employee", href: "/employees/add", adminOnly: true },
     ],
   },
   {
     group: "Leave",
     items: [
-      { label: "Apply for Leave", href: "/leave/request/apply", icon: "📝", employeeOnly: true },
-      { label: "Leave History", href: "/leave/request/history", icon: "📜", employeeOnly: true },
-      { label: "Balances", href: "/leave/request/balances", icon: "💰", adminOnly: true },
-      { label: "Admin View", href: "/leave/admin", icon: "✅", adminOnly: true },
+      { label: "Apply for Leave", href: "/leave/request/apply", employeeOnly: true },
+      { label: "Leave History", href: "/leave/request/history", employeeOnly: true },
+      { label: "Balances", href: "/leave/request/balances", adminOnly: true },
+      { label: "Admin View", href: "/leave/admin", adminOnly: true },
     ],
   },
   {
     group: "Grievance",
     items: [
-      { label: "Submit", href: "/grievance", icon: "📢" },
-      { label: "Admin View", href: "/grievance/admin", icon: "⚙️", adminOnly: true },
+      { label: "Submit", href: "/grievance" },
+      { label: "Admin View", href: "/grievance/admin", adminOnly: true },
     ],
   },
-
 ];
 
 const publicPaths = ["/login", "/forgot-password", "/reset-password"];
@@ -102,7 +101,7 @@ export default function Sidebar() {
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   }`}
                 >
-                  <span className="text-base">{link.icon}</span>
+                  {/* Icon span removed here */}
                   {link.label}
                 </Link>
               );
