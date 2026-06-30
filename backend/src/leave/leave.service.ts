@@ -207,6 +207,85 @@ export class LeaveService {
     ]);
   }
 
+  async getAllBalances() {
+    const leaveTypes = await this.prisma.leaveType.findMany();
+    const result = [];
+
+    for (const lt of leaveTypes) {
+      const balances = await this.prisma.leaveBalance.findMany({
+        where: { leave_type_id: lt.leave_type_id },
+      });
+
+      const totalEmployees = balances.length;
+      const totalUsed = balances.reduce((sum, b) => sum + b.used_days, 0);
+      const totalRemaining = balances.reduce((sum, b) => sum + b.remaining_days, 0);
+      const defaultTotal = balances.length > 0 ? balances[0].total_days : 20;
+
+      result.push({
+        leave_type_id: lt.leave_type_id,
+        leave_type: lt.name,
+        total_days: defaultTotal,
+        total_used: totalUsed,
+        total_remaining: totalRemaining,
+        employee_count: totalEmployees,
+      });
+    }
+
+    return result;
+  }
+
+  async createBalance(data: { leave_type_id: string; total_days: number }) {
+    const employees = await this.prisma.employee.findMany({ where: { status: 'Active' } });
+    let created = 0;
+
+    for (const emp of employees) {
+      const existing = await this.prisma.leaveBalance.findUnique({
+        where: {
+          employee_id_leave_type_id: {
+            employee_id: emp.employee_id,
+            leave_type_id: data.leave_type_id,
+          },
+        },
+      });
+      if (!existing) {
+        await this.prisma.leaveBalance.create({
+          data: {
+            employee_id: emp.employee_id,
+            leave_type_id: data.leave_type_id,
+            total_days: data.total_days,
+            used_days: 0,
+            remaining_days: data.total_days,
+          },
+        });
+        created++;
+      }
+    }
+
+    return { message: `Created ${created} balances`, count: created };
+  }
+
+  async updateBalanceByType(leaveTypeId: string, data: { total_days?: number }) {
+    if (data.total_days === undefined) throw new BadRequestException('total_days is required');
+
+    const updated = await this.prisma.leaveBalance.updateMany({
+      where: { leave_type_id: leaveTypeId },
+      data: {
+        total_days: data.total_days,
+        remaining_days: data.total_days,
+      },
+    });
+
+    return { message: `Updated ${updated.count} balances` };
+  }
+
+  async deleteBalanceByType(leaveTypeId: string) {
+    const deleted = await this.prisma.leaveBalance.deleteMany({
+      where: { leave_type_id: leaveTypeId },
+    });
+
+    return { message: `Deleted ${deleted.count} balances` };
+  }
+
   async updateStatus(leaveId: string, status: 'Approved' | 'Rejected', adminId: string) {
     const request = await this.prisma.leaveRequest.findUnique({
       where: { leave_id: leaveId },
