@@ -51,6 +51,7 @@ export default function EditEmployeePage() {
           full_name: data.full_name || '',
           email: data.email || '',
           phone: data.phone || '',
+          password: '',
           position: data.position || '',
           status: data.status || 'Active',
         });
